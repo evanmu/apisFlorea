@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.ProxySelector;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -65,6 +66,7 @@ public class AnthenServiceIntfTest {
 
 		NetMsgclient client = anthenService.getMsgClient();
 		// 发送短信记录操作日志
-		client.sendMsg(client, 0, "18651616696", "测试短信", 1);
+		client.sendMsg(client, 0, "18652925450",
+				"测试短信" + new Timestamp(System.currentTimeMillis()), 1);
 	}
 }

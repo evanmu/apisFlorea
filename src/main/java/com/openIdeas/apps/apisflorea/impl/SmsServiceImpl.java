@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.apc.www.stdws.wsdl.isxcentralalarms_v1.ISXCentralAlarmsService_v1_0Stub.GetAllActiveAlarmsResponse;
-import com.apc.www.stdws.wsdl.isxcentralalarms_v1.ISXCentralAlarmsService_v1_0Stub.ISXCAlarm;
 import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
 import com.openIdeas.apps.apisflorea.entity.PhoneItem;
 import com.openIdeas.apps.apisflorea.intf.AnthenServiceIntf;
@@ -48,8 +46,7 @@ public class SmsServiceImpl implements RequestHandlerIntf {
 		String severity = params.get("severity");
 		List<String> sts = Arrays.asList(severity.split("[|]"));
 		// // 4. 调用wbs接口获取具体故障内容
-		// GetAllActiveAlarmsResponse response =
-		// WebServerceUtil.getAllActiveAlarms();
+
 		// 5. 转换为短信内容
 		// StringBuffer sb = convert2Sms(sts, response);
 		// String content = sb.toString();
@@ -68,35 +65,6 @@ public class SmsServiceImpl implements RequestHandlerIntf {
 		}
 
 		return "SUCCESS";
-	}
-
-	private StringBuffer convert2Sms(List<String> sts,
-			GetAllActiveAlarmsResponse response) {
-		StringBuffer sb = new StringBuffer();
-		if (null != response && null != response.getArrayOfISXCAlarm()) {
-			// 告警数组
-			ISXCAlarm[] arrays = response.getArrayOfISXCAlarm().getISXCAlarm();
-			logger.debug("短信内容： {}", arrays.length);
-			String SEPAR = ";";
-			for (ISXCAlarm isa : arrays) {
-				// 不包含在要求发短信序列内，跳过
-				if (!sts.contains(isa.getISXCAlarmSeverity())) {
-					continue;
-				}
-				sb.append("设备：").append(isa.getDeviceID()).append(SEPAR)
-						.append("严重级别：").append(isa.getISXCAlarmSeverity())
-						.append(SEPAR).append("时间：")
-						.append(isa.getActiveTime()).append(SEPAR)
-						.append("描述：").append(isa.getDescription())
-						.append(SEPAR).append("建议：")
-						.append(isa.getRecommendedAction()).append("/n");
-			}
-		}
-
-		if (0 == sb.length()) {
-			sb.append("告警").append(sts.toArray()).append(" 未获取到具体信息,请自行查看");
-		}
-		return sb;
 	}
 
 	/**
