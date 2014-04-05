@@ -1,0 +1,12 @@
+01-21 17:40:11 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Table "AF_SMS_OP_LOG" not found; SQL statement:
+insert into af_sms_op_log (id, content, create_time, finish_time, phone_no, receive_msg, status) values (null, ?, ?, ?, ?, ?, ?) [42102-173]
+01-21 17:40:11 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Table "AF_SMS_OP_LOG" not found; SQL statement:
+insert into af_sms_op_log (id, content, create_time, finish_time, phone_no, receive_msg, status) values (null, ?, ?, ?, ?, ?, ?) [42102-173]
+01-21 17:40:11 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Table "AF_SMS_OP_LOG" not found; SQL statement:
+insert into af_sms_op_log (id, content, create_time, finish_time, phone_no, receive_msg, status) values (null, ?, ?, ?, ?, ?, ?) [42102-173]
+01-21 17:40:11 jdbc[2]: exception
+org.h2.jdbc.JdbcSQLException: Table "AF_SMS_OP_LOG" not found; SQL statement:
+insert into af_sms_op_log (id, content, create_time, finish_time, phone_no, receive_msg, status) values (null, ?, ?, ?, ?, ?, ?) [42102-173]
