@@ -4,101 +4,98 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.linkage.netmsg.NetMsgclient;
+import com.linkage.netmsg.server.ReceiveMsg;
+import com.openIdeas.apps.apisflorea.entity.PhoneItem;
 import com.openIdeas.apps.apisflorea.intf.AnthenServiceIntf;
+import com.openIdeas.apps.apisflorea.model.ReceiveSmsMsg;
 
+/**
+ * 
+ * @author evan
+ * 
+ */
 public class SendMsgTask implements Runnable {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
-    /** 序列号 */
-    private Long serialNo;
+	private AnthenServiceIntf anthenService;
 
-    /** 手机号 */
-    private Long phoneNo;
+	private Iterable<PhoneItem> phoneList;
 
-    /** 内容 */
-    private String content;
+	/** 内容 */
+	private String content;
 
-    private AnthenServiceIntf anthenService;
+	public SendMsgTask(AnthenServiceIntf anthenService,
+			Iterable<PhoneItem> list, String content) {
+		this.anthenService = anthenService;
+		this.phoneList = list;
+		this.content = content;
+	}
 
-    public SendMsgTask(Long serialNo, Long phoneNo, String content) {
-        this.serialNo = serialNo;
-        this.phoneNo = phoneNo;
-        this.content = content;
-    }
+	@Override
+	public void run() {
 
-    @Override
-    public void run() {
-        while (!getAnthenService().isAnthed()) {
-            try {
-                logger.info("未认证成功，线程休眠半分钟");
-                
-                Thread.sleep(30000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-        }
+		ReceiveMsg msgImpl = new ReceiveSmsMsg();
+		// 1.调用认证任务
+		try {
+			if (!getAnthenService().isAnthed()) {
+				anthenService.anthenMsg(msgImpl);
+				Thread.sleep(30000);
+			}
+		} catch (InterruptedException e) {
+			logger.error(e.getMessage());
+		}
 
-        logger.debug("认证成功，发送短信，手机号：{}， 短信内容：{}", this.phoneNo, this.content);
-        // 不再休眠说明已经认证成功，进行发短信处理
-        NetMsgclient client = getAnthenService().getMsgClient();
-        // 发送短信记录操作日志
-        client.sendMsg(client, 0, this.phoneNo.toString(), this.content, 1);
-    }
+		while (!getAnthenService().isAnthed()) {
+			try {
+				anthenService.anthenMsg(msgImpl);
+				logger.info("未认证成功，线程休眠半分钟");
+				Thread.sleep(30000);
+			} catch (InterruptedException e) {
+				logger.error(e.getMessage());
+			}
+		}
 
-    /**
-     * @return the serialNo
-     */
-    public Long getSerialNo() {
-        return serialNo;
-    }
+		// 2. 不再休眠说明已经认证成功，进行发短信处理
+		NetMsgclient client = getAnthenService().getMsgClient();
+		logger.debug("认证成功, phoneList has next=" + phoneList.iterator().hasNext());
+		for (PhoneItem phoneItem : phoneList) {
+			logger.debug("发送短信，手机号：{}， 短信内容：{}", phoneItem.getPhoneNo(),
+					this.content);
+			// 发送短信记录操作日志
+			client.sendMsg(client, 0, phoneItem.getPhoneNo().toString(),
+					this.content, 1);
+		}
 
-    /**
-     * @param serialNo the serialNo to set
-     */
-    public void setSerialNo(Long serialNo) {
-        this.serialNo = serialNo;
-    }
+	}
 
-    /**
-     * @return the phoneNo
-     */
-    public Long getPhoneNo() {
-        return phoneNo;
-    }
+	/**
+	 * @return the content
+	 */
+	public String getContent() {
+		return content;
+	}
 
-    /**
-     * @param phoneNo the phoneNo to set
-     */
-    public void setPhoneNo(Long phoneNo) {
-        this.phoneNo = phoneNo;
-    }
+	/**
+	 * @param content
+	 *            the content to set
+	 */
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-    /**
-     * @return the content
-     */
-    public String getContent() {
-        return content;
-    }
+	/**
+	 * @param anthenService
+	 *            the anthenService to set
+	 */
+	public void setAnthenService(AnthenServiceIntf anthenService) {
+		this.anthenService = anthenService;
+	}
 
-    /**
-     * @param content the content to set
-     */
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    /**
-     * @param anthenService the anthenService to set
-     */
-    public void setAnthenService(AnthenServiceIntf anthenService) {
-        this.anthenService = anthenService;
-    }
-
-    /**
-     * @return the anthenService
-     */
-    private AnthenServiceIntf getAnthenService() {
-        return anthenService;
-    }
+	/**
+	 * @return the anthenService
+	 */
+	private AnthenServiceIntf getAnthenService() {
+		return anthenService;
+	}
 }

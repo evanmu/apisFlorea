@@ -1,7 +1,5 @@
 package com.openIdeas.apps.apisflorea.impl;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -22,6 +20,9 @@ public class SmsServiceImpl implements RequestHandlerIntf {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
+	private AnthenServiceIntf anthenService;
+
+	@Autowired
 	private PhoneItemDao phoneItemDao;
 
 	/**
@@ -31,51 +32,22 @@ public class SmsServiceImpl implements RequestHandlerIntf {
 	@Qualifier("msgthreadPool")
 	private ExecutorService msgPool;
 
-	@Autowired
-	private AnthenServiceIntf anthenService;
-
 	@Override
 	public String handlerRequest(Map<String, String> params) {
-		// 1.调用认证任务
-		firstAuthenTask();
-
 		logger.debug("handlerRequest 参数{}", params);
+
+		// 1. 短信内容 使用|分割“ERROR” “FAILURE” “CRITICAL” “WARNING” “INFORMATIONAL”
+		String content = params.get("content");
+		// content = "测试短信" + new Timestamp(System.currentTimeMillis());
+		logger.debug("短信内容： {}", content);
 		// 2. 获取当前待发送的手机号队列
 		Iterable<PhoneItem> list = phoneItemDao.findAll();
-		// 3. 短信内容 使用|分割“ERROR” “FAILURE” “CRITICAL” “WARNING” “INFORMATIONAL”
-		String severity = params.get("severity");
-		List<String> sts = Arrays.asList(severity.split("[|]"));
-		// // 4. 调用wbs接口获取具体故障内容
 
-		// 5. 转换为短信内容
-		// StringBuffer sb = convert2Sms(sts, response);
-		// String content = sb.toString();
-		String content = "测试短信";
-		logger.debug("短信内容： {}", content);
-
-		SendMsgTask task = null;
-		PhoneItem pi = new PhoneItem();
-		pi.setId(1L);
-		pi.setPhoneNo(18651616696L);
-		for (PhoneItem phoneItem : list) {
-			task = new SendMsgTask(phoneItem.getId(), phoneItem.getPhoneNo(),
-					content);
-			task.setAnthenService(anthenService);
-			msgPool.execute(task);
-		}
+		// 3. 创建发送短信线程任务
+		SendMsgTask task = new SendMsgTask(anthenService, list, content);
+		msgPool.execute(task);
 
 		return "SUCCESS";
-	}
-
-	/**
-	 * 功能描述: <br>
-	 * 认证任务
-	 */
-	private void firstAuthenTask() {
-		AuthenTask task = new AuthenTask();
-		task.setAnthenService(anthenService);
-		Thread authThread = new Thread(task, "authenTask");
-		authThread.start();
 	}
 
 	public static String getAnnot() {

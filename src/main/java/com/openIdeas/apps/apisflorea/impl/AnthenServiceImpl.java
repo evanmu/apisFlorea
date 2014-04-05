@@ -40,7 +40,6 @@ public class AnthenServiceImpl implements AnthenServiceIntf {
 		try {
 			boolean result = msgClient.anthenMsg(msgClient);
 			isAuthed = result;
-			// isAuthed = true;
 			return result;
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);

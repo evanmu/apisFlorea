@@ -12,3 +12,6 @@ eclipse maven jetty
 3. 界面问题
 4. 接口验证
 
+
+目前，发送短信方法：
+url:8080/ApisFlorea/sendSms?content=测试短信123
