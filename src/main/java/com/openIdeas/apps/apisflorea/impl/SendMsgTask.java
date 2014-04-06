@@ -27,6 +27,7 @@ public class SendMsgTask implements Runnable {
 
 	public SendMsgTask(AnthenServiceIntf anthenService,
 			Iterable<PhoneItem> list, String content) {
+		logger.debug("新建短信发送任务, 发送内容{}", content);
 		this.anthenService = anthenService;
 		this.phoneList = list;
 		this.content = content;

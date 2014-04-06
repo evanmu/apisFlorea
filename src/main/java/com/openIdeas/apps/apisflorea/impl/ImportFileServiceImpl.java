@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
 import com.openIdeas.apps.apisflorea.entity.PhoneItem;
+import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.intf.ImportFileServiceIntf;
 import com.openIdeas.apps.apisflorea.result.FileResult;
 
@@ -27,7 +28,7 @@ public class ImportFileServiceImpl implements ImportFileServiceIntf {
 
     @Autowired
     private PhoneItemDao phoneItemDao;
-
+    
     @Override
     public FileResult importCsv(InputStream in) {
         FileResult result = new FileResult();
@@ -68,6 +69,9 @@ public class ImportFileServiceImpl implements ImportFileServiceIntf {
             // 成功个数
             result.setSucdCount(phoneItemDao.count());
         }
+        
+        //清空smsService phoneList
+        InterfaceServcie.getHandler(InterfaceEm.sendSms).clearQueue();
 
         return result;
     }

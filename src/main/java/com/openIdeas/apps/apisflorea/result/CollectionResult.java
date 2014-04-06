@@ -47,6 +47,8 @@ public class CollectionResult<T extends Collection<?>> extends Result {
 
         return this;
     }
+    
+    
 
     /*
      * (non-Javadoc)

@@ -34,8 +34,9 @@ public class Result implements Serializable {
     /**
      * 失败
      */
-    public void fail() {
+    public Result fail() {
         this.success = false;
+        return this;
     }
 
     /**
@@ -43,9 +44,10 @@ public class Result implements Serializable {
      * 
      * @param errorCode 错误码
      */
-    public void fail(String errorCode) {
+    public Result fail(String errorCode) {
         this.success = false;
         this.errorCode = errorCode;
+        return this;
     }
 
     /**
@@ -54,10 +56,11 @@ public class Result implements Serializable {
      * @param errorCode 错误码
      * @param message 结果信息
      */
-    public void fail(String errorCode, String message) {
+    public Result fail(String errorCode, String message) {
         this.success = false;
         this.errorCode = errorCode;
         this.message = message;
+        return this;
     }
 
     /**
