@@ -9,6 +9,8 @@ public interface RequestHandlerIntf {
 
 	String SEND_SMS = "smsService";
 
+	void initParams();
+	
 	/**
 	 * 
 	 * 处理map请求

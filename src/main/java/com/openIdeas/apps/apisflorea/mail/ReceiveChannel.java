@@ -181,13 +181,15 @@ public class ReceiveChannel {
 	 * 【判断此邮件是否已读，如果未读返回返回false,反之返回true】
 	 */
 	public boolean isNew() throws MessagingException {
-		boolean isnew = false;
+		boolean isnew = true;
 		Flags flags = ((Message) mimeMessage).getFlags();
-		// Flags.Flag[] flag = flags.getSystemFlags();
-		// Flags flags = message.getFlags();
-		if (flags.contains(Flags.Flag.SEEN)) {
-			// System.out.println("这是一封已读邮件");
-			isnew = true;
+		Flags.Flag[] flag = flags.getSystemFlags();
+		for (int i = 0; i < flag.length; i++) {
+			if (flag[i].equals(Flags.Flag.SEEN)) {
+				isnew = false;
+				// System.out.println("seen Message.");
+				break;
+			}
 		}
 		return isnew;
 	}

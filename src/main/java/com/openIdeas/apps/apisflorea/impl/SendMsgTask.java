@@ -1,5 +1,7 @@
 package com.openIdeas.apps.apisflorea.impl;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +28,8 @@ public class SendMsgTask implements Runnable {
 	private String content;
 
 	public SendMsgTask(AnthenServiceIntf anthenService,
-			Iterable<PhoneItem> list, String content) {
-		logger.debug("新建短信发送任务, 发送内容{}", content);
+			List<PhoneItem> list, String content) {
+		logger.debug("新建短信发送任务, 发送内容{}, 待发送号码size={}", content, list.size());
 		this.anthenService = anthenService;
 		this.phoneList = list;
 		this.content = content;
@@ -38,18 +40,12 @@ public class SendMsgTask implements Runnable {
 
 		ReceiveMsg msgImpl = new ReceiveSmsMsg();
 		// 1.调用认证任务
-		try {
-			if (!getAnthenService().isAnthed()) {
-				anthenService.anthenMsg(msgImpl);
-				Thread.sleep(30000);
-			}
-		} catch (InterruptedException e) {
-			logger.error(e.getMessage());
+		if (!getAnthenService().isAnthed()) {
+			anthenService.anthenMsg(msgImpl);
 		}
 
 		while (!getAnthenService().isAnthed()) {
 			try {
-				anthenService.anthenMsg(msgImpl);
 				logger.info("未认证成功，线程休眠半分钟");
 				Thread.sleep(30000);
 			} catch (InterruptedException e) {
@@ -59,7 +55,8 @@ public class SendMsgTask implements Runnable {
 
 		// 2. 不再休眠说明已经认证成功，进行发短信处理
 		NetMsgclient client = getAnthenService().getMsgClient();
-		logger.debug("认证成功, phoneList has next=" + phoneList.iterator().hasNext());
+		logger.debug("认证成功, phoneList has next="
+				+ phoneList.iterator().hasNext());
 		for (PhoneItem phoneItem : phoneList) {
 			logger.debug("发送短信，手机号：{}， 短信内容：{}", phoneItem.getPhoneNo(),
 					this.content);

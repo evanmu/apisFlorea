@@ -8,7 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
+import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
+import com.openIdeas.apps.apisflorea.impl.InterfaceServcie;
 import com.openIdeas.apps.apisflorea.mail.ReceiveMailServiceIntf;
 import com.openIdeas.apps.apisflorea.model.MailMessage;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
@@ -27,9 +28,6 @@ public class ReceiveMailTask {
 	@Autowired
 	private ReceiveMailServiceIntf receiveMail;
 
-	@Autowired
-	private RequestHandlerIntf requestHandler;
-
 	public void receive() {
 		logger.debug("定时任务在运行...");
 		CollectionResult<List<MailMessage>> result = receiveMail
@@ -44,7 +42,7 @@ public class ReceiveMailTask {
 		}
 
 		for (MailMessage mail : result.getDataSet()) {
-			requestHandler.handleMailMessage(mail);
+			InterfaceServcie.getHandler(InterfaceEm.sendSms).handleMailMessage(mail);
 		}
 	}
 }

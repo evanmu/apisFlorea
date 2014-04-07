@@ -44,6 +44,7 @@ public class ReceiveMailServiceImpl implements ReceiveMailServiceIntf {
 
 	private String defaultSender;
 
+	@SuppressWarnings("restriction")
 	public ReceiveMailServiceImpl() {
 		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 		this.sessionProvider = new IMAPSessionProvider();
@@ -79,17 +80,17 @@ public class ReceiveMailServiceImpl implements ReceiveMailServiceIntf {
 				pmm = new ReceiveChannel((MimeMessage) msg);
 				// 判断是否来自正确的发件人
 				if (!pmm.getFrom().contains(defaultSender)) {
-					logger.debug("收到来自{}的邮件", pmm.getFrom());
+					// logger.debug("收到来自{}的邮件", pmm.getFrom());
 					continue;
 				}
 
-				// if(!pmm.isNew()) {
-				// logger.debug("收到来自{}的邮件已读", pmm.getFrom());
-				// continue;
-				// }
+				if (!pmm.isNew()) {
+					logger.debug("收到来自{}的邮件已读, 主题：{}", pmm.getFrom(),
+							pmm.getSubject());
+					continue;
+				}
 
 				// 判断message 已经处理
-				// if (pmm.isNew()) {
 				logger.debug("待发送内容: {}", pmm.getSubject());
 				mm = new MailMessage();
 				mm.setOccurTime(pmm.getSentDate());
@@ -97,9 +98,8 @@ public class ReceiveMailServiceImpl implements ReceiveMailServiceIntf {
 				list.add(mm);
 				// 标记已读
 				msg.setFlag(Flags.Flag.SEEN, true);
-				// }
-				// pmm.getMessageId()
 			}
+
 			result.setDataSet(list);
 
 			// 释放资源
@@ -124,6 +124,7 @@ public class ReceiveMailServiceImpl implements ReceiveMailServiceIntf {
 			}
 		}
 
+		logger.debug("Exiting {}", methodName);
 		return result;
 	}
 
