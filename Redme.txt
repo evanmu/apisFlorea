@@ -15,3 +15,5 @@ eclipse maven jetty
 
 目前，发送短信方法：
 url:8080/ApisFlorea/sendSms?content=测试短信123
+
+测试合并修改
