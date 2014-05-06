@@ -30,7 +30,7 @@ public class GeniResult<T> extends Result {
 
         return this;
     }
-
+    
     /**
      * @return the object
      */

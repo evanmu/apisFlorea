@@ -1,3 +1,12 @@
+drop table AF_MAIL_MESSAGE if exists;
+create table AF_MAIL_MESSAGE 
+(
+   MESSAGE_ID			 VARCHAR2(100) not null,
+   SUBJECT	             VARCHAR2(2048)       not null,
+   STATUS                VARCHAR2(4)          not null,
+   constraint PK_MAIL_MESSAGE primary key (MESSAGE_ID)
+);
+
 drop table AF_SMS_OP_LOG if exists;
 create table AF_SMS_OP_LOG 
 (

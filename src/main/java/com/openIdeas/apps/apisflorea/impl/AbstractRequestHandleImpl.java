@@ -1,62 +1,77 @@
 package com.openIdeas.apps.apisflorea.impl;
 
-import java.sql.Timestamp;
 import java.util.Map;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
+import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
-import com.openIdeas.apps.apisflorea.model.MailMessage;
 import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
+@Service
 public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
-    private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Override
-    public Result handlerRequest(Map<String, String> params) {
-        logger.debug("handlerRequest 参数{}", params);
+	@Autowired
+	private MailMessageServiceIntf mailMessageService;
 
-        // 1. 获取转发内容
-        String content = getForwardContent(params);
+	@Override
+	public Result handlerRequest(Map<String, String> params) {
+		logger.debug("handlerRequest 参数{}", params);
 
-        handleForward(content);
+		// 1. 获取转发内容
+		// String content = getForwardContent(params);
 
-        return new Result();
-    }
+		// handleForward(content);
 
-    /**
-     * 获取转发内容
-     * 
-     * @param params
-     * @return
-     */
-    protected abstract String getForwardContent(Map<String, String> params);
+		return new Result();
+	}
 
-    /**
-     * 处理转发
-     * 
-     * @param content
-     */
-    protected abstract void handleForward(String content);
+	/**
+	 * 获取转发内容
+	 * 
+	 * @param params
+	 * @return
+	 */
+	protected abstract String getForwardContent(Map<String, String> params);
 
-    @Override
-    public GeniResult<MailMessage> handleMailMessage(Message message) {
-        // logger.debug("事件发生时间: {}, 事件内容：{}", message.getOccurTime(), message.getSubject());
-        // handleForward(message.getSubject());
-        //
-        GeniResult<MailMessage> result = new GeniResult<MailMessage>();
-        MailMessage mm = new MailMessage();
-        try {
-            mm.setOccurTime(new Timestamp(message.getSentDate().getTime()));
-        } catch (MessagingException e) {
+	/**
+	 * 处理转发
+	 * 
+	 * @param content
+	 */
+	protected abstract GeniResult<HandlerStatus> handleForward(
+			String msgId);
 
-        }
-        result.setObject(mm);
-        return result;
-    }
+	@Override
+	public Result handleMailMessage(String msgId) {
+		GeniResult<String> result = new GeniResult<String>();
+		// 1. 更新为处理中
+		Result ur = mailMessageService.updateMailStatus(msgId,
+				HandlerStatus.P);
+		if (!ur.isSuccess()) {
+			logger.warn("更新邮件状态失败，id：{}", msgId);
+			result.fail(ur.getErrorCode());
+			return result;
+		}
+		// 2. 转发处理
+		GeniResult<HandlerStatus> gr = handleForward(msgId);
+		
+		if (null == gr || !gr.isSuccess()) {
+			logger.warn("转发处理失败，id：{}", msgId);
+			result.fail(gr.getErrorCode());
+			return result;
+		}
+
+		if (HandlerStatus.S.equals(gr.getObject())) {
+			logger.info("转发处理完成，id：{}", msgId);
+		}
+
+		return result;
+	}
 }

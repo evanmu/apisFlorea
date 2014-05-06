@@ -2,10 +2,6 @@ package com.openIdeas.apps.apisflorea.intf;
 
 import java.util.Map;
 
-import javax.mail.Message;
-
-import com.openIdeas.apps.apisflorea.model.MailMessage;
-import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
 public interface RequestHandlerIntf {
@@ -30,7 +26,7 @@ public interface RequestHandlerIntf {
 	 * @param message
 	 * @return
 	 */
-	GeniResult<MailMessage> handleMailMessage(Message message);
+	Result handleMailMessage(String id);
 
 	void clearQueue();
 }
