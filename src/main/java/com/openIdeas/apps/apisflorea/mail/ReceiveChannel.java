@@ -187,7 +187,6 @@ public class ReceiveChannel {
 		for (int i = 0; i < flag.length; i++) {
 			if (flag[i].equals(Flags.Flag.SEEN)) {
 				isnew = false;
-				// System.out.println("seen Message.");
 				break;
 			}
 		}

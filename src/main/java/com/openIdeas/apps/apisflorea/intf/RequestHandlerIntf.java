@@ -2,14 +2,17 @@ package com.openIdeas.apps.apisflorea.intf;
 
 import java.util.Map;
 
+import javax.mail.Message;
+
 import com.openIdeas.apps.apisflorea.model.MailMessage;
+import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
 public interface RequestHandlerIntf {
 
 	String SEND_SMS = "smsService";
 
-	void initParams();
+	Result initParams();
 	
 	/**
 	 * 
@@ -19,7 +22,7 @@ public interface RequestHandlerIntf {
 	 *            请求参数
 	 * @return 响应
 	 */
-	String handlerRequest(Map<String, String> params);
+	Result handlerRequest(Map<String, String> params);
 
 	/**
 	 * 处理mail消息
@@ -27,7 +30,7 @@ public interface RequestHandlerIntf {
 	 * @param message
 	 * @return
 	 */
-	Result handleMailMessage(MailMessage message);
+	GeniResult<MailMessage> handleMailMessage(Message message);
 
 	void clearQueue();
 }

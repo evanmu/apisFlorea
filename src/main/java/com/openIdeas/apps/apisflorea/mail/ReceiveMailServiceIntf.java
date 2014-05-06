@@ -2,7 +2,8 @@ package com.openIdeas.apps.apisflorea.mail;
 
 import java.util.List;
 
-import com.openIdeas.apps.apisflorea.model.MailMessage;
+import javax.mail.Message;
+
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
 
 /**
@@ -17,5 +18,5 @@ public interface ReceiveMailServiceIntf {
 	 * 获取待发送主题
 	 * @return
 	 */
-	CollectionResult<List<MailMessage>> getSubjects4Sms();
+	CollectionResult<List<Message>> getSubjects4Sms();
 }
