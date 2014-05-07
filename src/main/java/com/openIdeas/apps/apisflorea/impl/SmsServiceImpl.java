@@ -8,10 +8,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.openIdeas.apps.apisflorea.entity.MailEntity;
 import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.exception.BizException;
 import com.openIdeas.apps.apisflorea.intf.AnthenServiceIntf;
+import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.OperatorLogServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
 import com.openIdeas.apps.apisflorea.model.ReceiveSmsMsg;
@@ -30,8 +32,11 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	@Autowired
 	private OperatorLogServiceIntf operLogService;
 
+	@Autowired
+	private MailMessageServiceIntf mailMessageService;
+
 	@Override
-	public Result initParams() {
+	public Result clientLogin() {
 		Result r = new Result();
 		// 短信接口认证登录
 		if (!anthenService.isAnthed()) {
@@ -54,7 +59,8 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	protected GeniResult<HandlerStatus> handleForward(String msgId) {
 		GeniResult<HandlerStatus> result = new GeniResult<HandlerStatus>(
 				HandlerStatus.N);
-
+		String methodName = "handleForward";
+		logger.debug("{}, 开始转发消息 msgId:{}", new Object[] { methodName, msgId });
 		// 1. 先初始化队列
 		CollectionResult<List<SmsOpLog>> colResult = operLogService
 				.initOplogs(msgId);
@@ -62,12 +68,71 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 			throw new BizException(colResult);
 		}
 
+		// 2. 待发送邮件内容
+		GeniResult<MailEntity> grm = mailMessageService.getMessage(msgId);
+		MailEntity me = grm.getObject();
+		if (null == me) {
+			throw new BizException("待处理邮件已经不存在");
+		}
+		String content = me.getSubject();
+
+		// 3. 登录认证
+		clientLogin();
+
+		// 3. 循环发送
+		Long phoneNo = null;
 		for (SmsOpLog log : colResult.getDataSet()) {
-			logger.debug("{}, msgId:{}, phoneNo:{}", new Object[] {
-					"handleForward", log.getMessageId(), log.getPhoneNo() });
+			phoneNo = log.getPhoneNo();
+			logger.debug("{}, 正在处理 msgId:{}, phoneNo:{}", new Object[] {
+					methodName, log.getMessageId(), phoneNo });
+			// 2.1 更新处理中
+			operLogService.update2Processing(msgId, phoneNo);
+
+			// 2.2 发送短信
+			sendSMS(content, phoneNo);
+			//发送完短信则休息半秒中
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				logger.debug("系统异常", e);
+				throw new BizException(e.getMessage());
+			}
 		}
 
 		return result;
+	}
+
+	/**
+	 * 发送短信处理
+	 * 
+	 * @param content
+	 * @param phoneNo
+	 */
+	private String sendSMS(String content, Long phoneNo) {
+		// 1.直接发送
+		String ss = anthenService.getMsgClient()
+				.sendMsg(anthenService.getMsgClient(), 0, phoneNo.toString(),
+						content, 1);
+
+		try {
+			// 连接出现异常，需要重新发送
+			while ("16".equals(ss)) {
+				// 2. 断开连接
+				anthenService.getMsgClient().closeConn();
+
+				// 3. 等待一分钟后重新连接
+				Thread.sleep(60000);
+				logger.debug("sendSMs, 等待一分钟后重新连接。。。。");
+				clientLogin();
+
+				ss = sendSMS(content, phoneNo);
+			}
+		} catch (InterruptedException e) {
+			//线程异常
+			logger.debug("系统异常", e);
+			return "0";
+		}
+		return ss;
 	}
 
 	// public void handleForward(String content) {

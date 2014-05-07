@@ -29,32 +29,33 @@ public class ReceiveMailTask {
 	private RemoteMailServiceIntf receiveMail;
 
 	public void receive() {
-	    RequestHandlerIntf handler = InterfaceServcie.getHandler(InterfaceEm.sendSms);
-        
+		RequestHandlerIntf handler = InterfaceServcie
+				.getHandler(InterfaceEm.sendSms);
+
 		logger.debug("定时任务在运行...");
-		//1. 初始化连接
-		Result init = handler.initParams();
-		if(!init.isSuccess()) {
-		    logger.warn("initParams fail");
-		    return;
+		// 1. 初始化连接
+		Result init = handler.clientLogin();
+		if (!init.isSuccess()) {
+			logger.warn("initParams fail");
+			return;
 		}
-		
-		//1. 获取待发送列表
-		CollectionResult<List<String>> result = receiveMail
-				.get2HanlerMail();
+
+		// 1. 获取待发送列表
+		CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
 		if (!result.isSuccess()) {
 			logger.error("获取待发送邮件列表失败, msg: {}", result);
 			return;
 		}
-		
-		//2. 处理邮件
+
+		// 2. 处理邮件
 		for (String msgid : result.getDataSet()) {
-			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms).handleMailMessage(msgid);
+			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms)
+					.handleMailMessage(msgid);
 			if (!gr.isSuccess()) {
-				//失败则更新邮件状态为异常
-				
+				// 失败则更新邮件状态为异常
+
 			}
 		}
-		
+
 	}
 }

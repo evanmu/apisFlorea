@@ -18,20 +18,20 @@ public class MailEntity implements Serializable {
 	 */
 	private static final long serialVersionUID = 6487418491176525017L;
 
-	/** 邮件唯一编码*/
+	/** 邮件唯一编码 */
 	private String messageId;
 
-	/** 主题*/
+	/** 主题 */
 	private String subject;
-	
+
 	/** 处理状态 */
 	private HandlerStatus status;
-	
-	/** 总共需要发送个数*/
-	private int totalCount;
-	
-	/** 成功条数*/
-	private int sucdCount;
+
+	/** 总共需要发送个数 */
+	private long totalCount;
+
+	/** 成功条数 */
+	private long sucdCount;
 
 	@Id
 	public String getMessageId() {
@@ -59,19 +59,19 @@ public class MailEntity implements Serializable {
 		this.status = status;
 	}
 
-	public int getTotalCount() {
+	public long getTotalCount() {
 		return totalCount;
 	}
 
-	public void setTotalCount(int totalCount) {
+	public void setTotalCount(long totalCount) {
 		this.totalCount = totalCount;
 	}
 
-	public int getSucdCount() {
+	public long getSucdCount() {
 		return sucdCount;
 	}
 
-	public void setSucdCount(int sucdCount) {
+	public void setSucdCount(long sucdCount) {
 		this.sucdCount = sucdCount;
 	}
 }

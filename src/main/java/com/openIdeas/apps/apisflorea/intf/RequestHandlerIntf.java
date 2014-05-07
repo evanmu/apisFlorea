@@ -8,8 +8,6 @@ public interface RequestHandlerIntf {
 
 	String SEND_SMS = "smsService";
 
-	Result initParams();
-	
 	/**
 	 * 
 	 * 处理map请求
@@ -27,4 +25,6 @@ public interface RequestHandlerIntf {
 	 * @return
 	 */
 	Result handleMailMessage(String id);
+	
+	Result clientLogin();
 }

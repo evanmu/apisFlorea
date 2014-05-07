@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
+import com.openIdeas.apps.apisflorea.result.Result;
 
 public interface OperatorLogServiceIntf {
 
@@ -20,5 +21,21 @@ public interface OperatorLogServiceIntf {
 	 * @return
 	 */
 	CollectionResult<List<SmsOpLog>> getOplog(String msgId);
+	
+	/**
+	 * 更新处理状态为处理中
+	 * @param msgId
+	 * @param phoneNo
+	 * @return
+	 */
+	Result update2Processing(String msgId, Long phoneNo);
+	
+	/**
+	 * 更新处理状态为成功
+	 * @param msgId
+	 * @param phoneNo
+	 * @return
+	 */
+	Result update2Sucd(String msgId, Long phoneNo);
 	
 }

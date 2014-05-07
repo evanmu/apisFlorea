@@ -4,10 +4,15 @@ create table AF_MAIL_MESSAGE
    MESSAGE_ID			 VARCHAR2(100) not null,
    SUBJECT	             VARCHAR2(2048)       not null,
    STATUS                VARCHAR2(4)          not null,
-   TOTAL_COUNT			 int      default 0,
-   SUCD_COUNT            int      default 0,
+   TOTAL_COUNT			 bigint      default 0,
+   SUCD_COUNT            bigint      default 0,
    constraint PK_MAIL_MESSAGE primary key (MESSAGE_ID)
 );
+
+comment on table AF_MAIL_MESSAGE is
+'待发送邮件记录';
+comment on column AF_MAIL_MESSAGE.MESSAGE_ID is
+'邮件id';
 
 create index AF_IDX_MAIL_MESSAGE_ID on AF_MAIL_MESSAGE(MESSAGE_ID);
 
