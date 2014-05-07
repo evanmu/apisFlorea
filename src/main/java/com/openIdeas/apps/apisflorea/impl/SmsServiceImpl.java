@@ -1,21 +1,21 @@
 package com.openIdeas.apps.apisflorea.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
-import com.openIdeas.apps.apisflorea.entity.PhoneItem;
+import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
+import com.openIdeas.apps.apisflorea.exception.BizException;
 import com.openIdeas.apps.apisflorea.intf.AnthenServiceIntf;
+import com.openIdeas.apps.apisflorea.intf.OperatorLogServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
 import com.openIdeas.apps.apisflorea.model.ReceiveSmsMsg;
+import com.openIdeas.apps.apisflorea.result.CollectionResult;
 import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
@@ -28,9 +28,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	private AnthenServiceIntf anthenService;
 
 	@Autowired
-	private PhoneItemDao phoneItemDao;
-
-	private List<PhoneItem> phoneList = new ArrayList<PhoneItem>();;
+	private OperatorLogServiceIntf operLogService;
 
 	@Override
 	public Result initParams() {
@@ -54,7 +52,22 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 
 	@Override
 	protected GeniResult<HandlerStatus> handleForward(String msgId) {
-		return null;
+		GeniResult<HandlerStatus> result = new GeniResult<HandlerStatus>(
+				HandlerStatus.N);
+
+		// 1. 先初始化队列
+		CollectionResult<List<SmsOpLog>> colResult = operLogService
+				.initOplogs(msgId);
+		if (!colResult.isSuccess()) {
+			throw new BizException(colResult);
+		}
+
+		for (SmsOpLog log : colResult.getDataSet()) {
+			logger.debug("{}, msgId:{}, phoneNo:{}", new Object[] {
+					"handleForward", log.getMessageId(), log.getPhoneNo() });
+		}
+
+		return result;
 	}
 
 	// public void handleForward(String content) {
@@ -81,29 +94,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	// logger.debug("Exiting {}", "handleForward");
 	// }
 
-	private List<PhoneItem> getPhoneList() {
-		if (phoneList.size() != 0) {
-			return phoneList;
-		}
-
-		// 查询数据库
-		logger.debug("{} 数据库查询号码列表", "getPhoneList");
-		Iterable<PhoneItem> itera = phoneItemDao.findAll();
-
-		// 添加到list成员中
-		if (null != itera) {
-			CollectionUtils.addAll(phoneList, itera.iterator());
-		}
-
-		return phoneList;
-	}
-
 	public static String getAnnot() {
 		return SEND_SMS;
-	}
-
-	@Override
-	public void clearQueue() {
-		this.phoneList.clear();
 	}
 }

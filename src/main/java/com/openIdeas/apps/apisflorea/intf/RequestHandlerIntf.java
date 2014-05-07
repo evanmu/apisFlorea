@@ -27,6 +27,4 @@ public interface RequestHandlerIntf {
 	 * @return
 	 */
 	Result handleMailMessage(String id);
-
-	void clearQueue();
 }

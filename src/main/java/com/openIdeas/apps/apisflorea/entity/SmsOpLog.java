@@ -24,91 +24,108 @@ import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 @IdClass(OpPK.class)
 @Table(name = "AF_SMS_OP_LOG")
 public class SmsOpLog implements Serializable {
-    /**
+	/**
      */
-    private static final long serialVersionUID = 2080247462677732030L;
+	private static final long serialVersionUID = 2080247462677732030L;
 
-    private String messageId;
+	private String messageId;
 
-    /** 手机号 */
-    private Long phoneNo;
+	/** 手机号 */
+	private Long phoneNo;
 
-    /** 状态 */
-    private HandlerStatus status;
+	/** 状态 */
+	private HandlerStatus status;
 
-    /** 创建时间 */
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Timestamp createTime;
+	/** 创建时间 */
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Timestamp createTime;
 
-    private String comments;
-    
-    @Id
-    public String getMessageId() {
-        return messageId;
-    }
+	private String comments;
 
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
+	public SmsOpLog() {
+		this.status = HandlerStatus.N;
+		this.createTime = new Timestamp(System.currentTimeMillis());
+	}
 
-    @Id
-    public Long getPhoneNo() {
-        return phoneNo;
-    }
+	public SmsOpLog(String msgId, Long phoneNo) {
+		this();
+		this.messageId = msgId;
+		this.phoneNo = phoneNo;
+	}
 
-    public void setPhoneNo(Long phoneNo) {
-        this.phoneNo = phoneNo;
-    }
+	@Id
+	public String getMessageId() {
+		return messageId;
+	}
 
-    /**
-     * @return the status
-     */
-    @Enumerated(javax.persistence.EnumType.STRING)
-    public HandlerStatus getStatus() {
-        return status;
-    }
+	public void setMessageId(String messageId) {
+		this.messageId = messageId;
+	}
 
-    /**
-     * @param status the status to set
-     */
-    public void setStatus(HandlerStatus status) {
-        this.status = status;
-    }
+	@Id
+	public Long getPhoneNo() {
+		return phoneNo;
+	}
 
-    /**
-     * @return the createTime
-     */
-    public Timestamp getCreateTime() {
-        return createTime;
-    }
+	public void setPhoneNo(Long phoneNo) {
+		this.phoneNo = phoneNo;
+	}
 
-    /**
-     * @param createTime the createTime to set
-     */
-    public void setCreateTime(Timestamp createTime) {
-        this.createTime = createTime;
-    }
+	/**
+	 * @return the status
+	 */
+	@Enumerated(javax.persistence.EnumType.STRING)
+	public HandlerStatus getStatus() {
+		return status;
+	}
 
-    /**
-     * @return the comments
-     */
-    public String getComments() {
-        return comments;
-    }
+	/**
+	 * @param status
+	 *            the status to set
+	 */
+	public void setStatus(HandlerStatus status) {
+		this.status = status;
+	}
 
-    /**
-     * @param comments the comments to set
-     */
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
+	/**
+	 * @return the createTime
+	 */
+	public Timestamp getCreateTime() {
+		return createTime;
+	}
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return "SmsOpLog [messageId=" + messageId + ", phoneNo=" + phoneNo + ", status=" + status + ", createTime="
-                + createTime + ", comments=" + comments + "]";
-    }
+	/**
+	 * @param createTime
+	 *            the createTime to set
+	 */
+	public void setCreateTime(Timestamp createTime) {
+		this.createTime = createTime;
+	}
+
+	/**
+	 * @return the comments
+	 */
+	public String getComments() {
+		return comments;
+	}
+
+	/**
+	 * @param comments
+	 *            the comments to set
+	 */
+	public void setComments(String comments) {
+		this.comments = comments;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "SmsOpLog [messageId=" + messageId + ", phoneNo=" + phoneNo
+				+ ", status=" + status + ", createTime=" + createTime
+				+ ", comments=" + comments + "]";
+	}
 }

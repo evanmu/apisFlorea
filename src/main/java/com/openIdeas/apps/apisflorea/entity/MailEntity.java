@@ -26,6 +26,12 @@ public class MailEntity implements Serializable {
 	
 	/** 处理状态 */
 	private HandlerStatus status;
+	
+	/** 总共需要发送个数*/
+	private int totalCount;
+	
+	/** 成功条数*/
+	private int sucdCount;
 
 	@Id
 	public String getMessageId() {
@@ -51,5 +57,21 @@ public class MailEntity implements Serializable {
 
 	public void setStatus(HandlerStatus status) {
 		this.status = status;
+	}
+
+	public int getTotalCount() {
+		return totalCount;
+	}
+
+	public void setTotalCount(int totalCount) {
+		this.totalCount = totalCount;
+	}
+
+	public int getSucdCount() {
+		return sucdCount;
+	}
+
+	public void setSucdCount(int sucdCount) {
+		this.sucdCount = sucdCount;
 	}
 }

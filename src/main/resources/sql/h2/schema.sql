@@ -4,6 +4,8 @@ create table AF_MAIL_MESSAGE
    MESSAGE_ID			 VARCHAR2(100) not null,
    SUBJECT	             VARCHAR2(2048)       not null,
    STATUS                VARCHAR2(4)          not null,
+   TOTAL_COUNT			 int      default 0,
+   SUCD_COUNT            int      default 0,
    constraint PK_MAIL_MESSAGE primary key (MESSAGE_ID)
 );
 

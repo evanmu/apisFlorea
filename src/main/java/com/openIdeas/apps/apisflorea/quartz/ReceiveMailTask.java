@@ -51,7 +51,8 @@ public class ReceiveMailTask {
 		for (String msgid : result.getDataSet()) {
 			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms).handleMailMessage(msgid);
 			if (!gr.isSuccess()) {
-				//失败更新邮件状态
+				//失败则更新邮件状态为异常
+				
 			}
 		}
 		
