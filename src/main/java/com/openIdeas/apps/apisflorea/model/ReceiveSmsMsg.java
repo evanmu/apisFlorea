@@ -28,17 +28,17 @@ public class ReceiveSmsMsg extends ReceiveMsg {
 	public void getAnswer(AnswerBean answerBean) {
 		super.getAnswer(answerBean);
 		/* 序列Id */
-		// String seqIdString = answerBean.getSeqId();
+		String seqIdString = answerBean.getSeqId();
 		// /* 短信状态 ,0表示提交至API平台成功 */
 		int status = answerBean.getStatus();
 		// /* 下行短信ID，用来唯一标识一条下行短信 */
 		String msgId = answerBean.getMsgId();
 
 		if (0 == status) {
-			logger.info("{} 邮件提交短信平台成功", msgId);
+			logger.info("{} 邮件提交短信平台成功,序列号：{}", msgId, seqIdString);
 			// 设置邮件已读
 			Result r = remoteMail.reserveMail(msgId);
-			
+
 			if (r.isSuccess()) {
 				// 删除数据库邮件记录
 				mailMessageService.deleteById(msgId);

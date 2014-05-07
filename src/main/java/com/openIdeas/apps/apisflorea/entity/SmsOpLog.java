@@ -32,6 +32,9 @@ public class SmsOpLog implements Serializable {
 
 	/** 手机号 */
 	private Long phoneNo;
+	
+	/** 短信序列号*/
+	private String smsSerailNo;
 
 	/** 状态 */
 	private HandlerStatus status;
@@ -117,15 +120,18 @@ public class SmsOpLog implements Serializable {
 		this.comments = comments;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
+	public String getSmsSerailNo() {
+		return smsSerailNo;
+	}
+
+	public void setSmsSerailNo(String smsSerailNo) {
+		this.smsSerailNo = smsSerailNo;
+	}
+
 	@Override
 	public String toString() {
 		return "SmsOpLog [messageId=" + messageId + ", phoneNo=" + phoneNo
-				+ ", status=" + status + ", createTime=" + createTime
-				+ ", comments=" + comments + "]";
+				+ ", smsSerailNo=" + smsSerailNo + ", status=" + status
+				+ ", createTime=" + createTime + ", comments=" + comments + "]";
 	}
 }

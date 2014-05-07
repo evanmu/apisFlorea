@@ -23,6 +23,7 @@ create table AF_SMS_OP_LOG
    PHONE_NO  			bigint not null,
    STATUS               VARCHAR2(4)          not null,
    CREATE_TIME          TIMESTAMP            not null,
+   SMS_SERAIL_NO		VARCHAR2(10),
    COMMENTS				VARCHAR2(256),
    constraint PK_SMS_OP_LOG primary key (MESSAGE_ID, PHONE_NO)
 );
@@ -39,6 +40,8 @@ comment on column AF_SMS_OP_LOG.CREATE_TIME is
 '创建时间';
 comment on column AF_SMS_OP_LOG.COMMENTS is
 '备注';
+
+create index AF_IDX_SMS_OP_LOG_SS on AF_SMS_OP_LOG(SMS_SERAIL_NO);
 
 drop table AF_PHONE_ITEM if exists;
 create table AF_PHONE_ITEM 

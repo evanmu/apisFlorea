@@ -18,6 +18,7 @@ import com.openIdeas.apps.apisflorea.exception.BizException;
 import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.OperatorLogServiceIntf;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
+import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
 @Service
@@ -87,6 +88,14 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 	}
 
 	private Result updateStatus(String msgId, Long phoneNo, HandlerStatus status) {
+		SmsOpLog log = getSmsOpLog(msgId, phoneNo);
+		// 2. 更新状态
+		log.setStatus(status);
+		smsOpLogDao.save(log);
+		return new Result();
+	}
+
+	private SmsOpLog getSmsOpLog(String msgId, Long phoneNo) {
 		// 1. 获取记录
 		SmsOpLog log = smsOpLogDao.findByMsgAndPhone(msgId, phoneNo);
 		if (null == log) {
@@ -94,10 +103,21 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 					"update2Processing", msgId, phoneNo });
 			throw new BizException("record not exists", "记录不存在");
 		}
-		// 2. 更新状态
-		log.setStatus(status);
+		return log;
+	}
+
+	@Override
+	public Result updateSmsSerail(String msgId, Long phoneNo, String smsSerail) {
+		SmsOpLog log = getSmsOpLog(msgId, phoneNo);
+		log.setSmsSerailNo(smsSerail);
 		smsOpLogDao.save(log);
 		return new Result();
+	}
+
+	@Override
+	public GeniResult<String> getMsgId(String smsSerail) {
+		
+		return null;
 	}
 
 }

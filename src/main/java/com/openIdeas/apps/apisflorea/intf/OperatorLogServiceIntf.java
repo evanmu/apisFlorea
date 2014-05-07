@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
+import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
 public interface OperatorLogServiceIntf {
@@ -37,5 +38,20 @@ public interface OperatorLogServiceIntf {
 	 * @return
 	 */
 	Result update2Sucd(String msgId, Long phoneNo);
+	
+	/**
+	 * 更新短信序列
+	 * @param msgId
+	 * @param phoneNo
+	 * @return
+	 */
+	Result updateSmsSerail(String msgId, Long phoneNo, String smsSerail);
+	
+	/**
+	 * 根据短信序列号查询邮件ID
+	 * @param smsSerail
+	 * @return
+	 */
+	GeniResult<String> getMsgId(String smsSerail);
 	
 }

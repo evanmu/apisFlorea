@@ -57,6 +57,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 
 	@Override
 	protected GeniResult<HandlerStatus> handleForward(String msgId) {
+		//初始化返回值
 		GeniResult<HandlerStatus> result = new GeniResult<HandlerStatus>(
 				HandlerStatus.N);
 		String methodName = "handleForward";
@@ -80,17 +81,20 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		clientLogin();
 
 		// 3. 循环发送
-		Long phoneNo = null;
 		for (SmsOpLog log : colResult.getDataSet()) {
-			phoneNo = log.getPhoneNo();
+			Long phoneNo = log.getPhoneNo();
 			logger.debug("{}, 正在处理 msgId:{}, phoneNo:{}", new Object[] {
 					methodName, log.getMessageId(), phoneNo });
 			// 2.1 更新处理中
-			operLogService.update2Processing(msgId, phoneNo);
+			operLogService.update2Processing(log.getMessageId(), phoneNo);
 
 			// 2.2 发送短信
-			sendSMS(content, phoneNo);
-			//发送完短信则休息半秒中
+			String ss = sendSMS(content, phoneNo);
+			logger.debug("{}, 发送短信返回：{}", methodName, ss);
+			// 2.3 发送完成后更新短信序列
+			operLogService.updateSmsSerail(msgId, phoneNo, ss);
+			
+			// 发送完短信则休息半秒中
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -128,7 +132,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 				ss = sendSMS(content, phoneNo);
 			}
 		} catch (InterruptedException e) {
-			//线程异常
+			// 线程异常
 			logger.debug("系统异常", e);
 			return "0";
 		}
