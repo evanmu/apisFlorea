@@ -47,4 +47,7 @@ public class SmsOpLogDaoTest extends SpringTransactionalTestCase {
         }
         logger.debug("--------------------");
     }
+    
+    public void testGetmsgId() {
+    }
 }

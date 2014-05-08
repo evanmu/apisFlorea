@@ -29,4 +29,6 @@ public interface SmsOpLogDao extends CrudRepository<SmsOpLog, Long> {
 	
 	@Query("Select count(s) From SmsOpLog s where s.messageId=?1")
 	long countByMessageId(String msgId);
+	
+	SmsOpLog findBySmsSerailNo(String smsSerailNo);
 }

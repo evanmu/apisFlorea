@@ -35,13 +35,16 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	@Autowired
 	private MailMessageServiceIntf mailMessageService;
 
+	@Autowired
+	private ReceiveSmsMsg receiveSmsMsg;
+
 	@Override
 	public Result clientLogin() {
 		Result r = new Result();
 		// 短信接口认证登录
 		if (!anthenService.isAnthed()) {
 			logger.debug("{} 短信接口登录", "initParams");
-			anthenService.anthenMsg(new ReceiveSmsMsg());
+			anthenService.anthenMsg(receiveSmsMsg);
 		}
 		r.setSuccess(anthenService.isAnthed());
 		return r;
@@ -57,15 +60,17 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 
 	@Override
 	protected GeniResult<HandlerStatus> handleForward(String msgId) {
-		//初始化返回值
+		// 初始化返回值
 		GeniResult<HandlerStatus> result = new GeniResult<HandlerStatus>(
 				HandlerStatus.N);
 		String methodName = "handleForward";
-		logger.debug("{}, 开始转发消息 msgId:{}", new Object[] { methodName, msgId });
+		logger.info("{}, 开始转发消息 msgId:{}", new Object[] { methodName, msgId });
 		// 1. 先初始化队列
 		CollectionResult<List<SmsOpLog>> colResult = operLogService
 				.initOplogs(msgId);
+		
 		if (!colResult.isSuccess()) {
+			logger.warn("初始化队列失败。。。");
 			throw new BizException(colResult);
 		}
 
@@ -73,6 +78,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		GeniResult<MailEntity> grm = mailMessageService.getMessage(msgId);
 		MailEntity me = grm.getObject();
 		if (null == me) {
+			logger.warn("找不到待处理的消息");
 			throw new BizException("待处理邮件已经不存在");
 		}
 		String content = me.getSubject();
@@ -80,20 +86,21 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		// 3. 登录认证
 		clientLogin();
 
-		// 3. 循环发送
+		result.setObject(HandlerStatus.P);
+		// 4. 循环发送
 		for (SmsOpLog log : colResult.getDataSet()) {
 			Long phoneNo = log.getPhoneNo();
-			logger.debug("{}, 正在处理 msgId:{}, phoneNo:{}", new Object[] {
+			logger.info("{}, 正在处理 msgId:{}, phoneNo:{}", new Object[] {
 					methodName, log.getMessageId(), phoneNo });
 			// 2.1 更新处理中
 			operLogService.update2Processing(log.getMessageId(), phoneNo);
 
 			// 2.2 发送短信
 			String ss = sendSMS(content, phoneNo);
-			logger.debug("{}, 发送短信返回：{}", methodName, ss);
+			logger.info("{}, 发送短信返回：{}", methodName, ss);
 			// 2.3 发送完成后更新短信序列
 			operLogService.updateSmsSerail(msgId, phoneNo, ss);
-			
+
 			// 发送完短信则休息半秒中
 			try {
 				Thread.sleep(500);
@@ -102,6 +109,8 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 				throw new BizException(e.getMessage());
 			}
 		}
+
+		result.setObject(HandlerStatus.S);
 
 		return result;
 	}
@@ -121,19 +130,20 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		try {
 			// 连接出现异常，需要重新发送
 			while ("16".equals(ss)) {
+				logger.warn("连接已经断开");
 				// 2. 断开连接
 				anthenService.getMsgClient().closeConn();
 
 				// 3. 等待一分钟后重新连接
 				Thread.sleep(60000);
-				logger.debug("sendSMs, 等待一分钟后重新连接。。。。");
+				logger.info("sendSMs, 等待一分钟后重新连接。。。。");
 				clientLogin();
 
 				ss = sendSMS(content, phoneNo);
 			}
 		} catch (InterruptedException e) {
 			// 线程异常
-			logger.debug("系统异常", e);
+			logger.error("系统异常", e);
 			return "0";
 		}
 		return ss;

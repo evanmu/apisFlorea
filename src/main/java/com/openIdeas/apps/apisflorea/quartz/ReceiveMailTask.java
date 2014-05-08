@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.impl.InterfaceServcie;
+import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
 import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
@@ -27,6 +29,9 @@ public class ReceiveMailTask {
 
 	@Autowired
 	private RemoteMailServiceIntf receiveMail;
+
+	@Autowired
+	private MailMessageServiceIntf mailMessageService;
 
 	public void receive() {
 		RequestHandlerIntf handler = InterfaceServcie
@@ -53,7 +58,7 @@ public class ReceiveMailTask {
 					.handleMailMessage(msgid);
 			if (!gr.isSuccess()) {
 				// 失败则更新邮件状态为异常
-
+				mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
 			}
 		}
 

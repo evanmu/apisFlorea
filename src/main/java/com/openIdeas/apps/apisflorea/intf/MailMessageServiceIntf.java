@@ -53,4 +53,11 @@ public interface MailMessageServiceIntf {
 	 * @return
 	 */
 	Result updateTotalCount(String msgId);
+	
+	/**
+	 * 累加成功个数
+	 * @param msgId
+	 * @return
+	 */
+	Result grandSucdCount(String msgId);
 }

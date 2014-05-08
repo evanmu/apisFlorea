@@ -4,6 +4,7 @@ import java.net.ConnectException;
 import java.net.NoRouteToHostException;
 import java.net.UnknownHostException;
 import java.security.Security;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
                 getMailStore().connect();
             }
 
-            logger.info("邮箱登录成功....");
+            logger.debug("邮箱登录成功....");
             Folder folder = mailStore.getFolder("INBOX");
             folder.open(Folder.READ_WRITE);
 
@@ -93,9 +94,9 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
             List<String> list = new ArrayList<String>();
             for (Message msg : msgArr) {
             	MimeMessage mm = (MimeMessage)msg;
-                logger.debug("主题:{}", mm.getSubject());
-                logger.debug("发送时间:{}", mm.getSentDate());
-                logger.debug("MessageID:{}", mm.getMessageID());
+                logger.info("主题:{}", mm.getSubject());
+                logger.info("发送时间:{}", new Timestamp(mm.getSentDate().getTime()));
+                logger.info("MessageID:{}", mm.getMessageID());
                 MailEntity mail = new MailEntity();
                 mail.setMessageId(mm.getMessageID());
                 mail.setSubject(msg.getSubject());
@@ -173,7 +174,7 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
                 getMailStore().connect();
             }
 
-            logger.info("邮箱已经登录...");
+            logger.debug("邮箱已经登录...");
             Folder folder = mailStore.getFolder("INBOX");
             folder.open(Folder.READ_WRITE);
 
@@ -182,14 +183,14 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
             // 搜索邮件
             Message[] msgArr = folder.search(st);
             
-            logger.debug("您收到id={}的邮件:{}封", id, msgArr.length);
+            logger.info("您搜到id={}的邮件:{}封", id, msgArr.length);
 
             for (Message msg : msgArr) {
-                MimeMessage mm = (MimeMessage)msg;
-                mailMessageService.deleteById(mm.getMessageID());
                 // 标记已读
                 msg.setFlag(Flags.Flag.SEEN, true);
             }
+            
+            logger.info("您已经将id={}的邮件设置为已读", id);
 
             // 释放资源
             if (folder != null) {

@@ -9,20 +9,16 @@ import com.linkage.netmsg.server.AnswerBean;
 import com.linkage.netmsg.server.ReceiveMsg;
 import com.linkage.netmsg.server.ReturnMsgBean;
 import com.linkage.netmsg.server.UpMsgBean;
-import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
-import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
-import com.openIdeas.apps.apisflorea.result.Result;
+import com.openIdeas.apps.apisflorea.intf.OperatorLogServiceIntf;
+import com.openIdeas.apps.apisflorea.result.GeniResult;
 
-@Service
+@Service("receiveSmsMsgImpl")
 public class ReceiveSmsMsg extends ReceiveMsg {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private RemoteMailServiceIntf remoteMail;
-
-	@Autowired
-	private MailMessageServiceIntf mailMessageService;
+	private OperatorLogServiceIntf operatorLog;
 
 	/* 获取下行短信返回状态和短信ID的方法 */
 	public void getAnswer(AnswerBean answerBean) {
@@ -32,17 +28,20 @@ public class ReceiveSmsMsg extends ReceiveMsg {
 		// /* 短信状态 ,0表示提交至API平台成功 */
 		int status = answerBean.getStatus();
 		// /* 下行短信ID，用来唯一标识一条下行短信 */
-		String msgId = answerBean.getMsgId();
-
+		String smsId = answerBean.getMsgId();
+		logger.info("序列号【{}】返回状态{}", seqIdString, status);
+		
 		if (0 == status) {
-			logger.info("{} 邮件提交短信平台成功,序列号：{}", msgId, seqIdString);
-			// 设置邮件已读
-			Result r = remoteMail.reserveMail(msgId);
-
-			if (r.isSuccess()) {
-				// 删除数据库邮件记录
-				mailMessageService.deleteById(msgId);
+			logger.info("{} 邮件提交短信平台成功,序列号：{}", smsId, seqIdString);
+			//根据序列号获取邮件id
+			GeniResult<String> msgResult = operatorLog.getMsgId(seqIdString);
+			if (!msgResult.isSuccess()) {
+				logger.info("转发记录中没有找到序列号：{}", seqIdString);
+				return;
 			}
+			
+			// 更新数据库手机发送记录状态为成功
+			operatorLog.update2Sucd(seqIdString);
 		}
 	}
 
@@ -81,5 +80,4 @@ public class ReceiveSmsMsg extends ReceiveMsg {
 		// System.out.println("ReturnMsgBean msgStatus: " + msgStatus);
 		// System.out.println("ReturnMsgBean msgErrStatus: " + msgErrStatus);
 	}
-
 }

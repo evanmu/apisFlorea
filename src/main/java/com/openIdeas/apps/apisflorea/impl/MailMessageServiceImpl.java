@@ -10,6 +10,7 @@ import com.openIdeas.apps.apisflorea.dao.SmsOpLogDao;
 import com.openIdeas.apps.apisflorea.entity.MailEntity;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
+import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
 import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
 
@@ -22,6 +23,9 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 
 	@Autowired
 	private SmsOpLogDao smsOpLogDao;
+	
+	@Autowired
+	private RemoteMailServiceIntf remoteMail;
 
 	@Override
 	public Result saveMail(MailEntity mail) {
@@ -30,7 +34,7 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 		Result ret = new Result();
 
 		// 如果不是新建，则表示邮件已经在处理
-		if (null != mm && HandlerStatus.N.equals(mm.getStatus())) {
+		if (null != mm && !HandlerStatus.N.equals(mm.getStatus())) {
 			return ret.fail("mail is Processing!");
 		}
 
@@ -84,6 +88,23 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 
 	@Override
 	public GeniResult<MailEntity> getMessage(String msgId) {
+		logger.debug("获取待发送内容 {}", msgId);
 		return new GeniResult<MailEntity>(getById(msgId));
+	}
+
+	@Override
+	public Result grandSucdCount(String msgId) {
+		synchronized (msgId) {
+			//更新成功个数只能一个
+			MailEntity me = getById(msgId);
+			me.setSucdCount(me.getSucdCount() + 1);
+			
+			if (me.getTotalCount() == me.getSucdCount()) {
+				me.setStatus(HandlerStatus.S);
+				remoteMail.reserveMail(msgId);
+			}
+			mailMessageDao.save(me);
+		}
+		return null;
 	}
 }

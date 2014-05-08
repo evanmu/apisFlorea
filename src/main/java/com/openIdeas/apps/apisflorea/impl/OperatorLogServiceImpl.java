@@ -41,7 +41,7 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 		logger.debug("{} 初始化操作记录, msgId={}", methodName, msgId);
 
 		List<SmsOpLog> ols = smsOpLogDao.findByMessageId(msgId);
-		if (null != ols && ols.size() > 0) {
+		if (null != ols && !ols.isEmpty()) {
 			logger.warn("{} msgId：{} 已经进入处理队列,队列长度：{}", new Object[] {
 					methodName, msgId, ols.size() });
 			throw new BizException("msgId is proccessing", "消息已经进入处理队列");
@@ -83,8 +83,16 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 	}
 
 	@Override
-	public Result update2Sucd(String msgId, Long phoneNo) {
-		return updateStatus(msgId, phoneNo, HandlerStatus.S);
+	public Result update2Sucd(String smsSerail) {
+		// 1. 根据短信序列号获取记录
+		SmsOpLog log = smsOpLogDao.findBySmsSerailNo(smsSerail);
+		// 2. 更新状态
+		log.setStatus(HandlerStatus.S);
+		smsOpLogDao.save(log);
+		
+		//3. 更新成功则，更新mail记录
+		mailMessageService.grandSucdCount(log.getMessageId());
+		return new Result();
 	}
 
 	private Result updateStatus(String msgId, Long phoneNo, HandlerStatus status) {
@@ -116,8 +124,17 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 
 	@Override
 	public GeniResult<String> getMsgId(String smsSerail) {
-		
-		return null;
+		SmsOpLog log = smsOpLogDao.findBySmsSerailNo(smsSerail);
+
+		GeniResult<String> result = new GeniResult<String>();
+		// 不为空则存在
+		if (null != log) {
+			String msgId = log.getMessageId();
+			result.setObject(msgId);
+			return result;
+		}
+		result.fail();
+		return result;
 	}
 
 }
