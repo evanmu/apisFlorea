@@ -1,5 +1,7 @@
 package com.openIdeas.apps.apisflorea.entity;
 
+import java.io.Serializable;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,9 +16,14 @@ import javax.persistence.MappedSuperclass;
  */
 // JPA 基类的标识
 @MappedSuperclass
-public abstract class IdEntity {
+public abstract class IdEntity implements Serializable {
 
-    protected Long id;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -1709199330471947222L;
+	
+	protected Long id;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

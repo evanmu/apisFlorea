@@ -1,7 +1,5 @@
 package com.openIdeas.apps.apisflorea.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -13,7 +11,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "AF_PHONE_ITEM")
-public class PhoneItem extends IdEntity implements Serializable {
+public class PhoneItem extends IdEntity {
     /**
      */
     private static final long serialVersionUID = 1869923356378753307L;

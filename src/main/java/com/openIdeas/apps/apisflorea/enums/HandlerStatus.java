@@ -9,5 +9,7 @@ public enum HandlerStatus {
     /** 成功 */
     S,
     /** 异常 */
-    E
+    E,
+    /** 失败*/
+    F
 }

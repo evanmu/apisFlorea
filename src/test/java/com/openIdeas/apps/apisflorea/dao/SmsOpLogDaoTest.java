@@ -1,6 +1,6 @@
 package com.openIdeas.apps.apisflorea.dao;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,45 +23,31 @@ public class SmsOpLogDaoTest extends SpringTransactionalTestCase {
     @Autowired
     SmsOpLogDao smsOpLogDao;
 
-    public SmsOpLog initData() {
+    @Test
+    public void testSave() {
         SmsOpLog log = new SmsOpLog();
-        log.setSerialNo(12L);
-        log.setPhoneNo(18892392983L);
-        log.setCreateTime(new Date());
+        log.setMessageId("8192343");
+        log.setPhoneNo(18652925450L);
+        log.setCreateTime(new Timestamp(System.currentTimeMillis()));
         log.setStatus(HandlerStatus.N);
-        log.setContent("测试短信");
-        return smsOpLogDao.save(log);
-    }
+        SmsOpLog sl = smsOpLogDao.save(log);
+        Assert.assertNotNull(sl.getMessageId());
+        logger.debug(sl.toString());
+        log.setPhoneNo(18652925451L);
+        log.setCreateTime(new Timestamp(System.currentTimeMillis()));
+        log.setStatus(HandlerStatus.S);
 
-    @Test
-    public void testSaveIterableOfS() {
-        SmsOpLog result = initData();
-
-        Assert.assertNotNull(result.getId());
-        logger.debug("保存完成: id=" + result.getId());
-        SmsOpLog sms = smsOpLogDao.findOne(result.getId());
-        logger.debug("要发送内容: {}, 状态{}", sms.getContent(), sms.getStatus());
-    }
-
-    @Test
-    public void testFindAll() {
-        initData();
-
-        Iterable<SmsOpLog> itb = smsOpLogDao.findAll();
-        Assert.assertNotNull(itb);
-        for (SmsOpLog smsOpLog : itb) {
-            logger.debug("id=" + smsOpLog.getId());
-            logger.debug("手机号：" + smsOpLog.getPhoneNo() + "要发送内容: " + smsOpLog.getContent());
+        sl = smsOpLogDao.save(log);
+        Assert.assertNotNull(sl.getPhoneNo());
+        logger.debug(sl.toString());
+        Iterable<SmsOpLog> its = smsOpLogDao.findAll();
+        logger.debug("--------------------");
+        for (SmsOpLog smsOpLog : its) {
+            logger.debug(smsOpLog.toString());
         }
+        logger.debug("--------------------");
     }
-
-    @Test
-    public void testFindBySerialNo() {
-        SmsOpLog result = initData();
-
-        Assert.assertNotNull(result.getId());
-        logger.debug("保存完成: id=" + result.getId());
-        SmsOpLog sms = smsOpLogDao.findBySerialNo(12L);
-        logger.debug("使用序列号查询要发送内容: {}, 状态{}", sms.getContent(), sms.getStatus());
+    
+    public void testGetmsgId() {
     }
 }

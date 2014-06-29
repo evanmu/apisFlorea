@@ -17,63 +17,59 @@ import org.springframework.stereotype.Service;
 
 import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
 import com.openIdeas.apps.apisflorea.entity.PhoneItem;
-import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.intf.ImportFileServiceIntf;
 import com.openIdeas.apps.apisflorea.result.FileResult;
 
 @Service("importFile")
 public class ImportFileServiceImpl implements ImportFileServiceIntf {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private PhoneItemDao phoneItemDao;
-    
-    @Override
-    public FileResult importCsv(InputStream in) {
-        FileResult result = new FileResult();
-        // 1. 将临时文件copy到目标路径
-        File targetFile = null;
-        List<String> phoneNos = null;
-        try {
-            targetFile = new File(System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis()
-                    + ".up");
-            OutputStream output = new FileOutputStream(targetFile);
-            IOUtils.copy(in, output);
+	@Autowired
+	private PhoneItemDao phoneItemDao;
 
-            phoneNos = FileUtils.readLines(targetFile, "utf-8");
-            output.close();
-        } catch (IOException e) {
-            logger.error("上传文件失败");
-        }
+	@Override
+	public FileResult importCsv(InputStream in) {
+		FileResult result = new FileResult();
+		// 1. 将临时文件copy到目标路径
+		File targetFile = null;
+		List<String> phoneNos = null;
+		try {
+			targetFile = new File(System.getProperty("java.io.tmpdir")
+					+ File.separator + System.currentTimeMillis() + ".up");
+			OutputStream output = new FileOutputStream(targetFile);
+			IOUtils.copy(in, output);
 
-        // 2. 读取文件到list, 保存记录
-        if (null == targetFile || !targetFile.exists() || null == phoneNos) {
-            result.fail("FL00000", "上传文件失败");
-            return result;
-        }
+			phoneNos = FileUtils.readLines(targetFile, "utf-8");
+			output.close();
+		} catch (IOException e) {
+			logger.error("上传文件失败");
+		}
 
-        List<PhoneItem> items = new ArrayList<PhoneItem>();
+		// 2. 读取文件到list, 保存记录
+		if (null == targetFile || !targetFile.exists() || null == phoneNos) {
+			result.fail("FL00000", "上传文件失败");
+			return result;
+		}
 
-        PhoneItem item = null;
-        for (String phone : phoneNos) {
-            item = new PhoneItem();
-            item.setPhoneNo(Long.valueOf(phone));
-            items.add(item);
-        }
-        // 先清空，后导入
-        phoneItemDao.deleteAll();
+		List<PhoneItem> items = new ArrayList<PhoneItem>();
 
-        Iterable<PhoneItem> res = phoneItemDao.save(items);
-        if (null != res) {
-            // 成功个数
-            result.setSucdCount(phoneItemDao.count());
-        }
-        
-        //清空smsService phoneList
-        InterfaceServcie.getHandler(InterfaceEm.sendSms).clearQueue();
+		PhoneItem item = null;
+		for (String phone : phoneNos) {
+			item = new PhoneItem();
+			item.setPhoneNo(Long.valueOf(phone));
+			items.add(item);
+		}
+		// 先清空，后导入
+		phoneItemDao.deleteAll();
 
-        return result;
-    }
+		Iterable<PhoneItem> res = phoneItemDao.save(items);
+		if (null != res) {
+			// 成功个数
+			result.setSucdCount(phoneItemDao.count());
+		}
+
+		return result;
+	}
 
 }

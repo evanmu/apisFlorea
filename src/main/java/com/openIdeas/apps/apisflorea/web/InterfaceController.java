@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.impl.InterfaceServcie;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
+import com.openIdeas.apps.apisflorea.result.Result;
 import com.openIdeas.apps.apisflorea.util.RequestUtils;
 
 /**
@@ -24,29 +25,31 @@ import com.openIdeas.apps.apisflorea.util.RequestUtils;
 @Controller
 @RequestMapping("/gateway")
 public class InterfaceController {
-	private Logger logger = LoggerFactory.getLogger(getClass());
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
-	/**
-	 * 发送短信接口
-	 * @see InterfaceEm 接口服务类型枚举
-	 * @return
-	 */
-	@RequestMapping(value = "/{service}")
-	@ResponseBody
-	public String handler(@PathVariable String service,
-			HttpServletRequest request) {
-		logger.info("网关接口服务[" + service + "], 参数：" + request.getParameterMap());
+    /**
+     * 发送短信接口
+     * 
+     * @see InterfaceEm 接口服务类型枚举
+     * @return
+     */
+    @RequestMapping(value = "/{service}")
+    @ResponseBody
+    public String handler(@PathVariable String service, HttpServletRequest request) {
+        logger.info("网关接口服务[" + service + "], 参数：" + request.getParameterMap());
 
-		try {
-			InterfaceEm inte = InterfaceEm.valueOf(service);
-			Map<String, String> map = RequestUtils.getParameters(request);
+        try {
+            InterfaceEm inte = InterfaceEm.valueOf(service);
+            Map<String, String> map = RequestUtils.getParameters(request);
 
-			RequestHandlerIntf handler = InterfaceServcie.getHandler(inte);
-			return handler.handlerRequest(map);
-		} catch (IllegalArgumentException e) {
-			logger.info("网关接口服务不支持类型： " + service);
-			return null;
-		}
-	}
+            RequestHandlerIntf handler = InterfaceServcie.getHandler(inte);
+            Result r = handler.handlerRequest(map);
+            logger.info("网关接口服务[{}], 执行结果：{}", service, r.isSuccess());
+            return r.getMessage();
+        } catch (IllegalArgumentException e) {
+            logger.info("网关接口服务不支持类型： " + service);
+            return null;
+        }
+    }
 
 }

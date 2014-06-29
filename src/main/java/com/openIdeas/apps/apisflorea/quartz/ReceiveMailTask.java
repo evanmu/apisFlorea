@@ -2,17 +2,19 @@ package com.openIdeas.apps.apisflorea.quartz;
 
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.impl.InterfaceServcie;
-import com.openIdeas.apps.apisflorea.mail.ReceiveMailServiceIntf;
-import com.openIdeas.apps.apisflorea.model.MailMessage;
+import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
+import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
+import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
+import com.openIdeas.apps.apisflorea.result.Result;
 
 /**
  * 收取邮件定時任务
@@ -26,23 +28,39 @@ public class ReceiveMailTask {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private ReceiveMailServiceIntf receiveMail;
+	private RemoteMailServiceIntf receiveMail;
+
+	@Autowired
+	private MailMessageServiceIntf mailMessageService;
 
 	public void receive() {
+		RequestHandlerIntf handler = InterfaceServcie
+				.getHandler(InterfaceEm.sendSms);
+
 		logger.debug("定时任务在运行...");
-		CollectionResult<List<MailMessage>> result = receiveMail
-				.getSubjects4Sms();
+		// 1. 初始化连接
+		Result init = handler.clientLogin();
+		if (!init.isSuccess()) {
+			logger.warn("initParams fail");
+			return;
+		}
+
+		// 1. 获取待发送列表
+		CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
 		if (!result.isSuccess()) {
+			logger.error("获取待发送邮件列表失败, msg: {}", result);
 			return;
 		}
 
-		if (CollectionUtils.isEmpty(result.getDataSet())) {
-			logger.debug("getSubjects4Sms mails is null");
-			return;
+		// 2. 处理邮件
+		for (String msgid : result.getDataSet()) {
+			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms)
+					.handleMailMessage(msgid);
+			if (!gr.isSuccess()) {
+				// 失败则更新邮件状态为异常
+				mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
+			}
 		}
 
-		for (MailMessage mail : result.getDataSet()) {
-			InterfaceServcie.getHandler(InterfaceEm.sendSms).handleMailMessage(mail);
-		}
 	}
 }

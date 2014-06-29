@@ -1,11 +1,14 @@
 package com.openIdeas.apps.apisflorea.dao;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import com.openIdeas.apps.apisflorea.entity.PhoneItem;
 
-@Component
+@Repository
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public interface PhoneItemDao extends CrudRepository<PhoneItem, Long> {
 
 }
