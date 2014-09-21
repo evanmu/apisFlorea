@@ -68,7 +68,7 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		// 1. 先初始化队列
 		CollectionResult<List<SmsOpLog>> colResult = operLogService
 				.initOplogs(msgId);
-		
+
 		if (!colResult.isSuccess()) {
 			logger.warn("初始化队列失败。。。");
 			throw new BizException(colResult);
@@ -132,7 +132,9 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 			while ("16".equals(ss)) {
 				logger.warn("连接已经断开");
 				// 2. 断开连接
-				anthenService.getMsgClient().closeConn();
+				if (null != anthenService.getMsgClient()) {
+					anthenService.getMsgClient().closeConn();
+				}
 
 				// 3. 等待一分钟后重新连接
 				Thread.sleep(60000);
@@ -148,30 +150,6 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		}
 		return ss;
 	}
-
-	// public void handleForward(String content) {
-	// logger.debug("Entering {}", "handleForward");
-	// // 1. 获取当前待发送的手机号队列
-	// List<PhoneItem> list = getPhoneList();
-	//
-	// // 2. 创建发送短信线程任务
-	// NetMsgclient client = anthenService.getMsgClient();
-	// logger.debug("认证成功, phoneList has next=" +
-	// phoneList.iterator().hasNext());
-	// for (PhoneItem phoneItem : list) {
-	// logger.debug("发送短信，手机号：{}， 短信内容：{}", phoneItem.getPhoneNo(), content);
-	// // 发送短信记录操作日志
-	// client.sendMsg(client, 0, phoneItem.getPhoneNo().toString(), content, 1);
-	// try {
-	// // 每秒上限提交2条
-	// Thread.sleep(500);
-	// } catch (InterruptedException e) {
-	//
-	// }
-	// }
-	//
-	// logger.debug("Exiting {}", "handleForward");
-	// }
 
 	public static String getAnnot() {
 		return SEND_SMS;
