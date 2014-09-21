@@ -92,7 +92,7 @@
 		<context:property-placeholder
 			ignore-unresolvable="true"
 			location="classpath*:/application.properties,
-          			  classpath*:/application.local.properties" />
+          			  classpath:/application-test.properties" />
 
 		<!-- 数据源配置, 使用DBCP数据库连接池 -->
 		<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"

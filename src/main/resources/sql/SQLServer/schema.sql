@@ -1,39 +1,51 @@
-if exists (select * from sysobjects where id = object_id('dbo.af_mail_message') and sysstat & 0xf = 3)
-	drop table dbo.af_mail_message;
-	
-create table dbo.af_mail_message 
-(
-   message_id			 varchar(100) not null,
-   subject	             varchar(2048)       not null,
-   status                varchar(4)          not null,
-   total_count			 bigint      default 0,
-   sucd_count            bigint      default 0,
-   constraint pk_mail_message primary key (message_id)
-) ;
+IF not EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = 'apis')
+CREATE DATABASE apis
 
-create index af_idx_mail_message_id on af_mail_message(message_id);
+GO 
+use apis
+GO
+if not exists (select * from sysobjects where id = object_id('af_mail_message') and sysstat & 0xf = 3)
 
-if exists (select * from sysobjects where id = object_id('dbo.af_sms_op_log') and sysstat & 0xf = 3)
-	drop table dbo.af_sms_op_log;
+CREATE TABLE af_mail_message (
+	message_id varchar (100) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+	subject varchar (2048) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+	status varchar (4) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+	total_count bigint NULL DEFAULT (0),
+	sucd_count bigint NULL DEFAULT (0),
+	sucd_items varchar(1000),
+	create_time datetime NOT NULL,
+	event_time  datetime NOT NULL,
+	finish_time datetime NULL,
+	CONSTRAINT pk_mail_message PRIMARY KEY  CLUSTERED 
+	(
+		message_id
+	)  
+) 
+GO
 
-create table dbo.af_sms_op_log 
-(
-   message_id			varchar(100) not null,
-   phone_no  			bigint not null,
-   status               varchar(4)          not null,
-   create_time          datetime            not null,
-   sms_serail_no		varchar(10),
-   comments				varchar(256),
-   constraint pk_sms_op_log primary key (message_id, phone_no)
-);
+if not exists (select * from sysobjects where id = object_id('af_phone_item') and sysstat & 0xf = 3)
+CREATE TABLE af_phone_item (
+	id bigint IDENTITY (1, 1) NOT NULL ,
+	phone_no bigint NULL ,
+	CONSTRAINT pk_phone_item PRIMARY KEY  CLUSTERED 
+	(
+		id
+	)  
+) 
+GO
 
-create index af_idx_sms_op_log_ss on af_sms_op_log(sms_serail_no);
-
-if exists (select * from sysobjects where id = object_id('dbo.af_phone_item') and sysstat & 0xf = 3)
-	drop table dbo.af_phone_item;
-create table dbo.af_phone_item 
-(
-   id                   bigint identity(1,1)     not null,
-   phone_no  			bigint,
-   constraint pk_phone_item  primary key (id)
-);
+if not exists (select * from sysobjects where id = object_id('af_sms_op_log') and sysstat & 0xf = 3)
+CREATE TABLE af_sms_op_log (
+	message_id varchar (100) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+	phone_no bigint NOT NULL ,
+	status varchar (4) COLLATE Chinese_PRC_CI_AS NOT NULL ,
+	create_time datetime NOT NULL ,
+	sms_serail_no varchar (10) COLLATE Chinese_PRC_CI_AS NULL ,
+	comments varchar (256) COLLATE Chinese_PRC_CI_AS NULL ,
+	CONSTRAINT pk_sms_op_log PRIMARY KEY  CLUSTERED 
+	(
+		message_id,
+		phone_no
+	)  
+) 
+GO

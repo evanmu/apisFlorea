@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
+import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 
 /**
  * 
@@ -29,6 +30,9 @@ public interface SmsOpLogDao extends CrudRepository<SmsOpLog, Long> {
 	
 	@Query("Select count(s) From SmsOpLog s where s.messageId=?1")
 	long countByMessageId(String msgId);
+	
+	@Query("Select count(s) From SmsOpLog s where s.messageId=?1 and s.status=?2")
+	long countByMessageId(String msgId, HandlerStatus status);
 	
 	SmsOpLog findBySmsSerailNo(String smsSerailNo);
 }

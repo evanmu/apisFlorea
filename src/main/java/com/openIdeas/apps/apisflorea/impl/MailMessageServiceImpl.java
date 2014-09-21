@@ -1,14 +1,19 @@
 package com.openIdeas.apps.apisflorea.impl;
 
+import java.sql.Timestamp;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.openIdeas.apps.apisflorea.dao.MailMessageDao;
+import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
 import com.openIdeas.apps.apisflorea.dao.SmsOpLogDao;
 import com.openIdeas.apps.apisflorea.entity.MailEntity;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
+import com.openIdeas.apps.apisflorea.exception.BizException;
 import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
 import com.openIdeas.apps.apisflorea.result.GeniResult;
@@ -23,7 +28,10 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 
 	@Autowired
 	private SmsOpLogDao smsOpLogDao;
-	
+
+	@Autowired
+	private PhoneItemDao phoneItemDao;
+
 	@Autowired
 	private RemoteMailServiceIntf remoteMail;
 
@@ -43,6 +51,7 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 		}
 
 		mail.setStatus(HandlerStatus.N);
+		mail.setCreateTime(new Timestamp(System.currentTimeMillis()));
 		// 保存数据
 		mailMessageDao.save(mail);
 		return ret;
@@ -63,6 +72,10 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 		}
 
 		mm.setStatus(status);
+
+		if (HandlerStatus.S.equals(status)) {
+			mm.setFinishTime(new Timestamp(System.currentTimeMillis()));
+		}
 
 		mailMessageDao.save(mm);
 
@@ -93,18 +106,48 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 	}
 
 	@Override
+	@Transactional
 	public Result grandSucdCount(String msgId) {
-		synchronized (msgId) {
-			//更新成功个数只能一个
-			MailEntity me = getById(msgId);
-			me.setSucdCount(me.getSucdCount() + 1);
-			
-			if (me.getTotalCount() == me.getSucdCount()) {
-				me.setStatus(HandlerStatus.S);
-				remoteMail.reserveMail(msgId);
-			}
-			mailMessageDao.save(me);
+		// 更新成功个数
+		int uc = mailMessageDao.increaseSucdCount(msgId);
+		if (1 != uc) {
+			throw new BizException("更新主记录失败");
 		}
+
+		MailEntity me = getById(msgId);
+
+		if (me.getTotalCount() == me.getSucdCount()) {
+			logger.debug("{} 的消息所有都成功了", msgId);
+			updateMailSucd(msgId);
+		}
+
+		mailMessageDao.save(me);
 		return null;
+	}
+
+	@Override
+	public boolean isDealSucd(String msgId) {
+		MailEntity mm = getById(msgId);
+		// 手机的条数
+		long items = phoneItemDao.count();
+
+		if (items == mm.getSucdCount()) {
+			updateMailSucd(msgId);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public void updateMailSucd(String msgId) {
+		MailEntity mm = getById(msgId);
+		//如果主消息记录状态不为S则更新
+		if (!HandlerStatus.S.equals(mm.getStatus())) {
+			// 更新邮件状态为成功
+			updateMailStatus(msgId, HandlerStatus.S);
+		}
+		remoteMail.reserveMail(msgId);
+
 	}
 }

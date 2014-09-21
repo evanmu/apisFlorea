@@ -15,6 +15,7 @@ public interface MailMessageServiceIntf {
 
 	/**
 	 * 获取消息记录
+	 * 
 	 * @param msgId
 	 * @return
 	 */
@@ -38,6 +39,22 @@ public interface MailMessageServiceIntf {
 	Result updateMailStatus(String id, HandlerStatus status);
 
 	/**
+	 * 更新邮件记录为成功
+	 * 
+	 * @param msgId
+	 */
+	void updateMailSucd(String msgId);
+
+	/**
+	 * 判断是否处理成功<BR>
+	 * 判断成功的短信条数等于手机items个数
+	 * 
+	 * @param msgId
+	 * @return
+	 */
+	boolean isDealSucd(String msgId);
+
+	/**
 	 * 删除
 	 * 
 	 * @param id
@@ -53,9 +70,10 @@ public interface MailMessageServiceIntf {
 	 * @return
 	 */
 	Result updateTotalCount(String msgId);
-	
+
 	/**
 	 * 累加成功个数
+	 * 
 	 * @param msgId
 	 * @return
 	 */

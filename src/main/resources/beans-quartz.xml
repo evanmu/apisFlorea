@@ -23,7 +23,7 @@
 		</property>
 		<!-- cron表达式 -->
 		<property name="cronExpression">
-			<value>0 */1 * * *  ?</value>
+			<value>0 */${task.interval} * * *  ?</value>
 		</property>
 	</bean>
 	
