@@ -20,7 +20,7 @@ public interface RemoteMailServiceIntf {
 	CollectionResult<List<String>> get2HanlerMail();
 	
 	/**
-	 * 还原邮件状态为未读
+	 * 标记邮件状态为已读
 	 * @param id
 	 * @return
 	 */

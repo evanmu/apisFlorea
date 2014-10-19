@@ -1,6 +1,7 @@
 package com.openIdeas.apps.apisflorea.impl;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
 import com.openIdeas.apps.apisflorea.result.GeniResult;
 import com.openIdeas.apps.apisflorea.result.Result;
+import com.openIdeas.apps.apisflorea.util.DateUtil;
 
 /**
  * 抽象请求处理实现
@@ -25,7 +27,7 @@ import com.openIdeas.apps.apisflorea.result.Result;
  */
 @Service
 public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(AbstractRequestHandleImpl.class);
 
 	@Autowired
 	private MailMessageServiceIntf mailMessageService;
@@ -64,14 +66,19 @@ public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
 		// 0 检查是否超时
 		MailEntity me = getMessageById(msgId);
 		Timestamp curt = new Timestamp(System.currentTimeMillis());
-		// if (me.getEventTime().) {
-		//
-		// }
+		Date yesDate = DateUtil.addDay(curt, -1);
+		//一天前的数据
+		if (yesDate.after(me.getEventTime())) {
+			logger.warn("邮件【{}】已经超时", msgId);
+			mailMessageService.updateMailSucd(msgId, "邮件已经超时，状态非新建");
+			throw new BizException("邮件【" + msgId + "】已经非新建状态");
+		}
 
 		// 1. 如果未成功，先处理异常情况（消息状态为处理中，异常等）
 		if (!HandlerStatus.N.equals(me.getStatus())) {
 			// 需要进入异常流程
 			logger.warn("邮件【{}】已经非新建状态", msgId);
+			mailMessageService.updateMailSucd(msgId, "邮件已经处理，状态非新建");
 			throw new BizException("邮件【" + msgId + "】已经非新建状态");
 		}
 
@@ -89,7 +96,7 @@ public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
 			return result;
 		}
 
-		// 3. 转发处理
+		// 4. 转发处理
 		GeniResult<HandlerStatus> gr = handleForward(msgId);
 
 		if (null == gr || !gr.isSuccess()) {

@@ -2,6 +2,7 @@ package com.openIdeas.apps.apisflorea.impl;
 
 import java.sql.Timestamp;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,10 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 			return ret.fail("mail exists!");
 		}
 
-		mail.setStatus(HandlerStatus.N);
+		if (null == mail.getStatus()) {
+			mail.setStatus(HandlerStatus.N);
+		}
+
 		mail.setCreateTime(new Timestamp(System.currentTimeMillis()));
 		// 保存数据
 		mailMessageDao.save(mail);
@@ -142,12 +146,32 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 	@Override
 	public void updateMailSucd(String msgId) {
 		MailEntity mm = getById(msgId);
-		//如果主消息记录状态不为S则更新
+		// 如果主消息记录状态不为S则更新
 		if (!HandlerStatus.S.equals(mm.getStatus())) {
 			// 更新邮件状态为成功
 			updateMailStatus(msgId, HandlerStatus.S);
 		}
 		remoteMail.reserveMail(msgId);
+	}
 
+	@Override
+	public void updateMailSucd(String msgId, String comment) {
+		MailEntity mm = getById(msgId);
+		if (null == mm) {
+			logger.warn("updateMailSucd mail not exists");
+			return;
+		}
+
+		mm.setFinishTime(new Timestamp(System.currentTimeMillis()));
+		if (StringUtils.isEmpty(mm.getComments())) {
+			mm.setComments(comment);
+		}
+
+		// 如果主消息记录状态不为S则更新
+		if (HandlerStatus.N.equals(mm.getStatus())) {
+			// 更新邮件状态为成功
+			updateMailStatus(msgId, HandlerStatus.S);
+		}
+		remoteMail.reserveMail(msgId);
 	}
 }

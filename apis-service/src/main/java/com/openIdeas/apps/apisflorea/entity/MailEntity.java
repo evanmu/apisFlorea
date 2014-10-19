@@ -51,6 +51,8 @@ public class MailEntity implements Serializable {
 
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
 	private Timestamp finishTime;
+	
+	private String comments;
 
 	@Id
 	public String getMessageId() {
@@ -124,5 +126,13 @@ public class MailEntity implements Serializable {
 
 	public void setEventTime(Timestamp eventTime) {
 		this.eventTime = eventTime;
+	}
+
+	public String getComments() {
+		return comments;
+	}
+
+	public void setComments(String comments) {
+		this.comments = comments;
 	}
 }

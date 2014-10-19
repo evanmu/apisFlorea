@@ -14,40 +14,44 @@ import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.test.spring.SpringTransactionalTestCase;
 
-@ActiveProfiles("production")
+//@ActiveProfiles("production")
 @ContextConfiguration(locations = { "/applicationContext-test.xml" })
 public class SmsOpLogDaoTest extends SpringTransactionalTestCase {
 
-    private static Logger logger = LoggerFactory.getLogger(SmsOpLogDaoTest.class);
+	private static Logger logger = LoggerFactory
+			.getLogger(SmsOpLogDaoTest.class);
 
-    @Autowired
-    SmsOpLogDao smsOpLogDao;
+	@Autowired
+	SmsOpLogDao smsOpLogDao;
 
-    @Test
-    public void testSave() {
-        SmsOpLog log = new SmsOpLog();
-        log.setMessageId("8192343");
-        log.setPhoneNo(18652925450L);
-        log.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        log.setStatus(HandlerStatus.N);
-        SmsOpLog sl = smsOpLogDao.save(log);
-        Assert.assertNotNull(sl.getMessageId());
-        logger.debug(sl.toString());
-        log.setPhoneNo(18652925451L);
-        log.setCreateTime(new Timestamp(System.currentTimeMillis()));
-        log.setStatus(HandlerStatus.S);
+	@Test
+	public void testSave() {
+		SmsOpLog log = new SmsOpLog();
+		log.setMessageId("8192343");
+		log.setPhoneNo(18652925450L);
+		log.setCreateTime(new Timestamp(System.currentTimeMillis()));
+		log.setStatus(HandlerStatus.N);
+		SmsOpLog sl = smsOpLogDao.save(log);
+		Assert.assertNotNull(sl.getMessageId());
+		logger.debug(sl.toString());
+		log.setPhoneNo(18652925451L);
+		log.setCreateTime(new Timestamp(System.currentTimeMillis()));
+		log.setStatus(HandlerStatus.S);
 
-        sl = smsOpLogDao.save(log);
-        Assert.assertNotNull(sl.getPhoneNo());
-        logger.debug(sl.toString());
-        Iterable<SmsOpLog> its = smsOpLogDao.findAll();
-        logger.debug("--------------------");
-        for (SmsOpLog smsOpLog : its) {
-            logger.debug(smsOpLog.toString());
-        }
-        logger.debug("--------------------");
-    }
-    
-    public void testGetmsgId() {
-    }
+		sl = smsOpLogDao.save(log);
+		Assert.assertNotNull(sl.getPhoneNo());
+		logger.debug(sl.toString());
+		Iterable<SmsOpLog> its = smsOpLogDao.findAll();
+		logger.debug("--------------------");
+		for (SmsOpLog smsOpLog : its) {
+			logger.debug(smsOpLog.toString());
+		}
+		logger.debug("--------------------");
+
+		SmsOpLog sol = smsOpLogDao.findTop1BySerailNo("200000001");
+		logger.debug("top 查询：" + sol);
+	}
+
+	public void testGetmsgId() {
+	}
 }

@@ -41,7 +41,7 @@ public interface OperatorLogServiceIntf {
 	 * @param smsSerail
 	 * @return
 	 */
-	Result update2Sucd(String smsSerail);
+	Result update2Sucd(String msgId, String smsSerail);
 
 	/**
 	 * 更新短信序列
