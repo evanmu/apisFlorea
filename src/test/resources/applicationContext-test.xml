@@ -52,6 +52,7 @@
 				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
 				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory
 				</prop>
+				<prop key="hibernate.show_sql">true</prop>
 				<prop key="net.sf.ehcache.configurationResourceName">ehcache/ehcache-hibernate-local.xml</prop>
 				<prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop>
 			</props>
@@ -85,13 +86,13 @@
 		<property name="maxPoolSize" value="20" />
 		<property name="queueCapacity" value="100" />
 	</bean>
-	
+
 	<!-- production/local development环境 -->
 	<beans profile="production,development">
 		<context:property-placeholder
 			ignore-unresolvable="true"
 			location="classpath*:/application.properties,
-          			  classpath*:/application.local.properties" />
+          			  classpath:/application-test.properties" />
 
 		<!-- 数据源配置, 使用DBCP数据库连接池 -->
 		<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
@@ -120,10 +121,14 @@
 					  classpath:/application-test.properties,
           			  classpath:/application.test.local.properties" />
 
+		<jdbc:initialize-database data-source="dataSource"
+			enabled="true">
+			<jdbc:script location="classpath:sql/SQLServer/schema.sql" />
+		</jdbc:initialize-database>
 		<!-- 嵌入式内存中数据库 -->
-		<jdbc:embedded-database id="dataSource" type="H2">
-			<jdbc:script location="classpath:sql/h2/schema.sql" />
-		</jdbc:embedded-database>
+		<!-- <jdbc:embedded-database id="dataSource" type="SQLServer"> -->
+		<!-- <jdbc:script location="classpath:sql/SQLServer/schema.sql" /> -->
+		<!-- </jdbc:embedded-database> -->
 
 		<!-- 初始化默认数据 -->
 		<bean class="com.openIdeas.apps.apisflorea.init.DataInitializer"

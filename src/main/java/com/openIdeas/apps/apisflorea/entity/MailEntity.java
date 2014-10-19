@@ -1,11 +1,14 @@
 package com.openIdeas.apps.apisflorea.entity;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 
@@ -32,6 +35,22 @@ public class MailEntity implements Serializable {
 
 	/** 成功条数 */
 	private long sucdCount;
+
+	/**
+	 * 成功的手机号id
+	 */
+	private String sucdItems;
+
+	/** 创建时间 */
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+	private Timestamp createTime;
+	
+	/** 事件时间 */
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+	private Timestamp eventTime;
+
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
+	private Timestamp finishTime;
 
 	@Id
 	public String getMessageId() {
@@ -73,5 +92,37 @@ public class MailEntity implements Serializable {
 
 	public void setSucdCount(long sucdCount) {
 		this.sucdCount = sucdCount;
+	}
+
+	public String getSucdItems() {
+		return sucdItems;
+	}
+
+	public void setSucdItems(String sucdItems) {
+		this.sucdItems = sucdItems;
+	}
+
+	public Timestamp getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Timestamp createTime) {
+		this.createTime = createTime;
+	}
+
+	public Timestamp getFinishTime() {
+		return finishTime;
+	}
+
+	public void setFinishTime(Timestamp finishTime) {
+		this.finishTime = finishTime;
+	}
+
+	public Timestamp getEventTime() {
+		return eventTime;
+	}
+
+	public void setEventTime(Timestamp eventTime) {
+		this.eventTime = eventTime;
 	}
 }

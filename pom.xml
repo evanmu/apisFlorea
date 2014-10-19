@@ -72,7 +72,11 @@
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.2.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>net.sourceforge.jtds</groupId>
+			<artifactId>jtds</artifactId>
+			<version>1.2.6</version>
+		</dependency>
 		<dependency>
 			<groupId>sendMsg</groupId>
 			<artifactId>sendMsg</artifactId>
@@ -368,7 +372,7 @@
 			<artifactId>quartz</artifactId>
 			<version>1.5.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
@@ -409,8 +413,12 @@
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.version}</version>
 				<configuration>
+					<webAppSourceDirectory>src/main/webapp</webAppSourceDirectory>
+					<scanIntervalSeconds>3</scanIntervalSeconds>
+					<webDefaultXml>jetty.xml</webDefaultXml>
+					<jettyEnvXml>jetty-env.xml</jettyEnvXml>
 					<webAppConfig>
-						<contextPath>/${project.artifactId}</contextPath>
+						<contextPath>/apis</contextPath>
 					</webAppConfig>
 				</configuration>
 			</plugin>

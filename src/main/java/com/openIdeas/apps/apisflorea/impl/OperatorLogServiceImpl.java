@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.openIdeas.apps.apisflorea.dao.PhoneItemDao;
 import com.openIdeas.apps.apisflorea.dao.SmsOpLogDao;
@@ -35,6 +36,7 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 	private MailMessageServiceIntf mailMessageService;
 
 	@Override
+	@Transactional
 	public CollectionResult<List<SmsOpLog>> initOplogs(String msgId) {
 		// 查询数据库
 		String methodName = "initOplogs";
@@ -44,11 +46,14 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 		if (null != ols && !ols.isEmpty()) {
 			logger.warn("{} msgId：{} 已经进入处理队列,队列长度：{}", new Object[] {
 					methodName, msgId, ols.size() });
-			throw new BizException("msgId is proccessing", "消息已经进入处理队列");
+			return new CollectionResult<List<SmsOpLog>>(ols);
 		}
+
 		// 查出全部手机号
 		Iterable<PhoneItem> itera = phoneItemDao.findAll();
-
+		if (!itera.iterator().hasNext()) {
+			throw new BizException("phoneList is empty", "未配置待通知的手机队列");
+		}
 		List<SmsOpLog> list = new ArrayList<SmsOpLog>();
 		SmsOpLog log = null;
 		for (PhoneItem phoneItem : itera) {
@@ -89,8 +94,8 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 		// 2. 更新状态
 		log.setStatus(HandlerStatus.S);
 		smsOpLogDao.save(log);
-		
-		//3. 更新成功则，更新mail记录
+
+		// 3. 更新成功则，更新mail记录
 		mailMessageService.grandSucdCount(log.getMessageId());
 		return new Result();
 	}

@@ -3,6 +3,7 @@ package com.openIdeas.apps.apisflorea.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,19 +69,15 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		// 1. 先初始化队列
 		CollectionResult<List<SmsOpLog>> colResult = operLogService
 				.initOplogs(msgId);
-		
-		if (!colResult.isSuccess()) {
-			logger.warn("初始化队列失败。。。");
+
+		if (CollectionUtils.isEmpty(colResult.getDataSet())) {
+			logger.warn("初始化队列为空。。。");
 			throw new BizException(colResult);
 		}
 
 		// 2. 待发送邮件内容
-		GeniResult<MailEntity> grm = mailMessageService.getMessage(msgId);
-		MailEntity me = grm.getObject();
-		if (null == me) {
-			logger.warn("找不到待处理的消息");
-			throw new BizException("待处理邮件已经不存在");
-		}
+		MailEntity me = getMessageById(msgId);
+
 		String content = me.getSubject();
 
 		// 3. 登录认证
@@ -89,6 +86,12 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		result.setObject(HandlerStatus.P);
 		// 4. 循环发送
 		for (SmsOpLog log : colResult.getDataSet()) {
+
+			if (HandlerStatus.S.equals(log.getStatus())) {
+				// 该手机短信已经发送成功，则继续
+				continue;
+			}
+
 			Long phoneNo = log.getPhoneNo();
 			logger.info("{}, 正在处理 msgId:{}, phoneNo:{}", new Object[] {
 					methodName, log.getMessageId(), phoneNo });
@@ -132,7 +135,9 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 			while ("16".equals(ss)) {
 				logger.warn("连接已经断开");
 				// 2. 断开连接
-				anthenService.getMsgClient().closeConn();
+				if (null != anthenService.getMsgClient()) {
+					anthenService.getMsgClient().closeConn();
+				}
 
 				// 3. 等待一分钟后重新连接
 				Thread.sleep(60000);
@@ -148,30 +153,6 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 		}
 		return ss;
 	}
-
-	// public void handleForward(String content) {
-	// logger.debug("Entering {}", "handleForward");
-	// // 1. 获取当前待发送的手机号队列
-	// List<PhoneItem> list = getPhoneList();
-	//
-	// // 2. 创建发送短信线程任务
-	// NetMsgclient client = anthenService.getMsgClient();
-	// logger.debug("认证成功, phoneList has next=" +
-	// phoneList.iterator().hasNext());
-	// for (PhoneItem phoneItem : list) {
-	// logger.debug("发送短信，手机号：{}， 短信内容：{}", phoneItem.getPhoneNo(), content);
-	// // 发送短信记录操作日志
-	// client.sendMsg(client, 0, phoneItem.getPhoneNo().toString(), content, 1);
-	// try {
-	// // 每秒上限提交2条
-	// Thread.sleep(500);
-	// } catch (InterruptedException e) {
-	//
-	// }
-	// }
-	//
-	// logger.debug("Exiting {}", "handleForward");
-	// }
 
 	public static String getAnnot() {
 		return SEND_SMS;

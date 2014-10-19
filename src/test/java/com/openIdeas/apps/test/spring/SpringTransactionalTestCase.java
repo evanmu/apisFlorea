@@ -7,6 +7,7 @@ package com.openIdeas.apps.test.spring;
 
 import javax.sql.DataSource;
 
+import org.hibernate.dialect.Dialect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
@@ -21,14 +22,15 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
  * @author calvin
  */
 @ActiveProfiles("test")
-public abstract class SpringTransactionalTestCase extends AbstractTransactionalJUnit4SpringContextTests {
+public abstract class SpringTransactionalTestCase extends
+		AbstractTransactionalJUnit4SpringContextTests {
 
-    protected DataSource dataSource;
+	protected DataSource dataSource;
 
-    @Override
-    @Autowired
-    public void setDataSource(DataSource dataSource) {
-        super.setDataSource(dataSource);
-        this.dataSource = dataSource;
-    }
+	@Override
+	@Autowired
+	public void setDataSource(DataSource dataSource) {
+		super.setDataSource(dataSource);
+		this.dataSource = dataSource;
+	}
 }
