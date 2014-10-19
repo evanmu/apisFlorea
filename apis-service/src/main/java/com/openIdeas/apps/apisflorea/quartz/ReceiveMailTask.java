@@ -53,7 +53,7 @@ public class ReceiveMailTask implements InitializingBean {
         Result init = handler.clientLogin();
         if (!init.isSuccess()) {
             logger.warn("initParams fail");
-            curTask.restart();
+            curTask.finish();
             return;
         }
 
@@ -61,7 +61,7 @@ public class ReceiveMailTask implements InitializingBean {
         CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
         if (!result.isSuccess()) {
             logger.error("获取待发送邮件列表失败, msg: {}", result);
-            curTask.restart();
+            curTask.finish();
             return;
         }
 

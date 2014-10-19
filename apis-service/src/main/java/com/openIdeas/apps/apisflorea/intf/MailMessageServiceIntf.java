@@ -44,6 +44,13 @@ public interface MailMessageServiceIntf {
 	 * @param msgId
 	 */
 	void updateMailSucd(String msgId);
+	
+	/**
+	 * 更新邮件记录为成功
+	 * @param msgId
+	 * @param comment
+	 */
+	void updateMailSucd(String msgId, String comment);
 
 	/**
 	 * 判断是否处理成功<BR>

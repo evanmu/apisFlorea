@@ -16,11 +16,12 @@ CREATE TABLE af_mail_message (
 	create_time datetime NOT NULL,
 	event_time  datetime NOT NULL,
 	finish_time datetime NULL,
+	comments varchar (256) ,
 	CONSTRAINT pk_mail_message PRIMARY KEY  CLUSTERED 
 	(
 		message_id
 	)  
-) 
+)
 GO
 
 if not exists (select * from sysobjects where id = object_id('af_phone_item') and sysstat & 0xf = 3)

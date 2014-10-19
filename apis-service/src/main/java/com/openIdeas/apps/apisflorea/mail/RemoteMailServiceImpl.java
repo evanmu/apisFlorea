@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 import java.security.Security;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.mail.Flags;
@@ -29,9 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.openIdeas.apps.apisflorea.entity.MailEntity;
+import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.result.CollectionResult;
 import com.openIdeas.apps.apisflorea.result.Result;
+import com.openIdeas.apps.apisflorea.util.DateUtil;
 import com.openIdeas.apps.apisflorea.util.PropertyFileUtil;
 
 /**
@@ -96,16 +99,33 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
 				MimeMessage mm = (MimeMessage) msg;
 				logger.info("主题:{}", mm.getSubject());
 				Timestamp eventTime = new Timestamp(mm.getSentDate().getTime());
-				logger.info("发送时间:{}",
-						eventTime);
+				logger.info("发送时间:{}", eventTime);
 				logger.info("MessageID:{}", mm.getMessageID());
 				MailEntity mail = new MailEntity();
 				mail.setMessageId(mm.getMessageID());
 				mail.setSubject(msg.getSubject());
 				mail.setEventTime(eventTime);
+
+				Timestamp curt = new Timestamp(System.currentTimeMillis());
+				String med = PropertyFileUtil.get("mail.exceed");
+				int intMed = Integer.parseInt(med);
+
+				Date yesDate = DateUtil.addHour(curt, -intMed);
+				// 一天前的数据
+				if (yesDate.after(eventTime)) {
+					logger.warn("邮件【{}】已经超时,过期时间:{}", mm.getMessageID(),
+							yesDate);
+					mail.setStatus(HandlerStatus.E);
+					mail.setComments("已经超过" + intMed + "小时");
+				}
+
+				// 标记邮件已读
+				msg.setFlag(Flags.Flag.SEEN, true);
 				// 保存邮件
 				mailMessageService.saveMail(mail);
-				list.add(mm.getMessageID());
+				if (HandlerStatus.N.equals(mail.getStatus())) {
+					list.add(mm.getMessageID());
+				}
 			}
 
 			result.setDataSet(list);
