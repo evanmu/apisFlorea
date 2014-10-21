@@ -116,16 +116,15 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
 					logger.warn("邮件【{}】已经超时,过期时间:{}", mm.getMessageID(),
 							yesDate);
 					mail.setStatus(HandlerStatus.E);
-					mail.setComments("已经超过" + intMed + "小时");
+					mail.setComments("邮件已经超时，时间" + intMed + "小时");
 				}
 
 				// 标记邮件已读
 				msg.setFlag(Flags.Flag.SEEN, true);
+
 				// 保存邮件
 				mailMessageService.saveMail(mail);
-				if (HandlerStatus.N.equals(mail.getStatus())) {
-					list.add(mm.getMessageID());
-				}
+				list.add(mm.getMessageID());
 			}
 
 			result.setDataSet(list);
@@ -212,11 +211,11 @@ public class RemoteMailServiceImpl implements RemoteMailServiceIntf {
 			logger.info("您搜到id={}的邮件:{}封", id, msgArr.length);
 
 			for (Message msg : msgArr) {
-				// 标记已读
-				msg.setFlag(Flags.Flag.SEEN, true);
+				// 标记未读
+				msg.setFlag(Flags.Flag.SEEN, false);
 			}
 
-			logger.info("您已经将id={}的邮件设置为已读", id);
+			logger.info("您已经将id={}的邮件设置为未读", id);
 
 			// 释放资源
 			if (folder != null) {

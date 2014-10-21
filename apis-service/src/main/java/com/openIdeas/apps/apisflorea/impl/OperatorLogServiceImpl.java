@@ -53,6 +53,7 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
         if (!itera.iterator().hasNext()) {
             throw new BizException("phoneList is empty", "未配置待通知的手机队列");
         }
+        
         List<SmsOpLog> list = new ArrayList<SmsOpLog>();
         SmsOpLog log = null;
         for (PhoneItem phoneItem : itera) {
@@ -62,6 +63,7 @@ public class OperatorLogServiceImpl implements OperatorLogServiceIntf {
 
         // 保存成功记录
         Iterable<SmsOpLog> its = smsOpLogDao.save(list);
+        
         List<SmsOpLog> ilist = new ArrayList<SmsOpLog>();
         CollectionUtils.addAll(ilist, its.iterator());
         // 更新待发邮件记录在队列数

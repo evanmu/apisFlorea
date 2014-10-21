@@ -12,7 +12,13 @@ public interface AnthenServiceIntf {
      * @return
      */
     boolean isAnthed();
+    
+    void closeConn();
 
+    void finallClose();
+    
+    NetMsgclient reconnect();
+    
     /**
      * 
      * 认证请求

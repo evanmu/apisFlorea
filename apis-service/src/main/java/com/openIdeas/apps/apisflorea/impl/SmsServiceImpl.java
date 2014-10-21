@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.linkage.netmsg.NetMsgclient;
 import com.openIdeas.apps.apisflorea.entity.MailEntity;
 import com.openIdeas.apps.apisflorea.entity.SmsOpLog;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
@@ -99,14 +100,16 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 			operLogService.update2Processing(log.getMessageId(), phoneNo);
 
 			// 2.2 发送短信
+			NetMsgclient msgClient = anthenService.getMsgClient();
+			logger.info("isStoped:{}, flag: {}", msgClient.isStoped,
+					msgClient.flag);
 			String ss = sendSMS(content, phoneNo);
 			logger.info("{}, 发送短信返回：{}", methodName, ss);
 			// 2.3 发送完成后更新短信序列
 			operLogService.updateSmsSerail(msgId, phoneNo, ss);
-
 			// 发送完短信则休息半秒中
 			try {
-				Thread.sleep(500);
+				Thread.sleep(550);
 			} catch (InterruptedException e) {
 				logger.debug("系统异常", e);
 				throw new BizException(e.getMessage());
@@ -126,24 +129,21 @@ public class SmsServiceImpl extends AbstractRequestHandleImpl {
 	 */
 	private String sendSMS(String content, Long phoneNo) {
 		// 1.直接发送
-		String ss = anthenService.getMsgClient()
-				.sendMsg(anthenService.getMsgClient(), 0, phoneNo.toString(),
-						content, 1);
+		NetMsgclient msgClient = anthenService.getMsgClient();
+
+		String ss = msgClient.sendMsg(msgClient, 0, phoneNo.toString(),
+				content, 1);
 
 		try {
 			// 连接出现异常，需要重新发送
 			while ("16".equals(ss)) {
 				logger.warn("连接已经断开");
-				// 2. 断开连接
-				if (null != anthenService.getMsgClient()) {
-					anthenService.getMsgClient().closeConn();
-				}
-
+				// msgClient = anthenService.reconnect();
+				// logger.info("尝试重新连接" + msgClient);
 				// 3. 等待一分钟后重新连接
-				Thread.sleep(60000);
-				logger.info("sendSMs, 等待一分钟后重新连接。。。。");
+				Thread.sleep(500);
+				logger.info("sendSMs, 等待500m后重新发送。。。。");
 				clientLogin();
-
 				ss = sendSMS(content, phoneNo);
 			}
 		} catch (InterruptedException e) {

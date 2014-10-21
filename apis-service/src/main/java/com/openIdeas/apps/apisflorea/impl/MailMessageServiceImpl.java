@@ -44,10 +44,14 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 
 		// 如果不是新建，则表示邮件已经在处理
 		if (null != mm && !HandlerStatus.N.equals(mm.getStatus())) {
+			mail.setStatus(mm.getStatus());
+			logger.info("{} 邮件正在处理中");
 			return ret.fail("mail is Processing!");
 		}
 
 		if (null != mm) {
+			mail.setStatus(mm.getStatus());
+			logger.info("{} 邮件已经存在");
 			return ret.fail("mail exists!");
 		}
 
@@ -73,6 +77,10 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 
 		if (null == mm) {
 			return ret.fail("mail not exists!");
+		}
+		
+		if (status.equals(mm.getStatus())) {
+			return ret;
 		}
 
 		mm.setStatus(status);
@@ -151,7 +159,6 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 			// 更新邮件状态为成功
 			updateMailStatus(msgId, HandlerStatus.S);
 		}
-		remoteMail.reserveMail(msgId);
 	}
 
 	@Override
@@ -172,6 +179,15 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 			// 更新邮件状态为成功
 			updateMailStatus(msgId, HandlerStatus.S);
 		}
-		remoteMail.reserveMail(msgId);
+	}
+
+	@Override
+	public void checkStatus(String msgId) {
+		// 1. 是否存在
+		MailEntity mm = getById(msgId);
+		if (!HandlerStatus.S.equals(mm.getStatus()) && !mm.getComments().contains("邮件已经超时")) {
+			//邮件未处理完成
+			remoteMail.reserveMail(msgId);
+		}
 	}
 }

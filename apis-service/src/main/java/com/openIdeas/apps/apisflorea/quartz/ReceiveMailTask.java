@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
 import com.openIdeas.apps.apisflorea.enums.InterfaceEm;
 import com.openIdeas.apps.apisflorea.impl.InterfaceServcie;
+import com.openIdeas.apps.apisflorea.intf.AnthenServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.MailMessageServiceIntf;
 import com.openIdeas.apps.apisflorea.intf.RequestHandlerIntf;
 import com.openIdeas.apps.apisflorea.mail.RemoteMailServiceIntf;
@@ -27,58 +28,66 @@ import com.openIdeas.apps.apisflorea.result.Result;
 @Service("receiveMailTask")
 public class ReceiveMailTask implements InitializingBean {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired
-    private RemoteMailServiceIntf receiveMail;
+	@Autowired
+	private RemoteMailServiceIntf receiveMail;
 
-    @Autowired
-    private MailMessageServiceIntf mailMessageService;
+	@Autowired
+	private MailMessageServiceIntf mailMessageService;
 
-    private static TaskStatus curTask = new TaskStatus();
+	@Autowired
+	private AnthenServiceIntf anthenService;
 
-    public void receive() {
+	private static TaskStatus curTask = new TaskStatus();
 
-        if (!curTask.isFinish()) {
-            logger.warn("上一次的任务未处理完成，不能进入 ！");
-            return;
-        } else {
-            curTask.restart();
-        }
+	public void receive() {
 
-        RequestHandlerIntf handler = InterfaceServcie.getHandler(InterfaceEm.sendSms);
+		if (!curTask.isFinish()) {
+			logger.warn("上一次的任务未处理完成，不能进入 ！");
+			return;
+		} else {
+			curTask.restart();
+		}
 
-        logger.debug("定时任务在运行...");
-        // 1. 初始化连接
-        Result init = handler.clientLogin();
-        if (!init.isSuccess()) {
-            logger.warn("initParams fail");
-            curTask.finish();
-            return;
-        }
+		RequestHandlerIntf handler = InterfaceServcie
+				.getHandler(InterfaceEm.sendSms);
 
-        // 1. 获取待发送列表
-        CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
-        if (!result.isSuccess()) {
-            logger.error("获取待发送邮件列表失败, msg: {}", result);
-            curTask.finish();
-            return;
-        }
+		logger.debug("定时任务在运行...");
+		// 1. 初始化连接
+		Result init = handler.clientLogin();
+		if (!init.isSuccess()) {
+			logger.warn("initParams fail");
+			curTask.finish();
+			return;
+		}
 
-        // 3. 处理邮件
-        for (String msgid : result.getDataSet()) {
-            Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms).handleMailMessage(msgid);
-            if (!gr.isSuccess()) {
-                // 失败则更新邮件状态为异常
-                mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
-            }
-        }
+		// 1. 获取待发送列表
+		CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
+		if (!result.isSuccess()) {
+			logger.error("获取待发送邮件列表失败, msg: {}", result);
+			curTask.finish();
+			return;
+		}
 
-        curTask.finish();
-    }
+		// 3. 处理邮件
+		for (String msgid : result.getDataSet()) {
+			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms)
+					.handleMailMessage(msgid);
+			if (!gr.isSuccess()) {
+				// 失败则更新邮件状态为异常
+				mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
+			}
+			mailMessageService.checkStatus(msgid);
+		}
+		// logger.info("短信发送完成，主动断开连接");
+		// anthenService.finallClose();
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        curTask.finish();
-    }
+		curTask.finish();
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		curTask.finish();
+	}
 }

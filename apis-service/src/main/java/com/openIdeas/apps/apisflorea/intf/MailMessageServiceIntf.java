@@ -85,4 +85,6 @@ public interface MailMessageServiceIntf {
 	 * @return
 	 */
 	Result grandSucdCount(String msgId);
+	
+	void checkStatus(String msgId);
 }

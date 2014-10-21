@@ -13,7 +13,7 @@ import com.openIdeas.apps.apisflorea.util.PropertyFileUtil;
 
 @Service("anthenService")
 public class AnthenServiceImpl implements AnthenServiceIntf {
-	private Logger logger = LoggerFactory.getLogger(getClass());
+	private Logger logger = LoggerFactory.getLogger(AnthenServiceImpl.class);
 
 	private NetMsgclient msgClient;
 
@@ -49,6 +49,43 @@ public class AnthenServiceImpl implements AnthenServiceIntf {
         }
 
         return false;
+	}
+
+	@Override
+	public void closeConn() {
+		isAuthed = false;
+		
+		try {
+			if (null != msgClient) {
+				msgClient.closeConn();
+			}
+		} catch (Throwable e) {
+			logger.warn("closeConn, 关闭连接。");
+		}
+	}
+
+	@Override
+	public void finallClose() {
+		isAuthed = false;
+		try {
+			if (null != msgClient) {
+				msgClient.finalClose();
+			}
+		} catch (Throwable e) {
+			logger.warn("closeConn, 完全关闭连接。");
+		}
+	}
+
+	@Override
+	public NetMsgclient reconnect() {
+		try {
+			if (null != msgClient) {
+				msgClient = msgClient.reconnect();
+			}
+		} catch (Throwable e) {
+			logger.warn("closeConn, 完全关闭连接。");
+		}
+		return msgClient;
 	}
 
 }

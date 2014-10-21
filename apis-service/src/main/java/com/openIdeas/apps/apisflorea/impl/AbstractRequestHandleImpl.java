@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.openIdeas.apps.apisflorea.entity.MailEntity;
 import com.openIdeas.apps.apisflorea.enums.HandlerStatus;
@@ -23,11 +22,12 @@ import com.openIdeas.apps.apisflorea.util.DateUtil;
  * 抽象请求处理实现
  * 
  * @author mupeng
- *
+ * 
  */
 @Service
 public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
-	private Logger logger = LoggerFactory.getLogger(AbstractRequestHandleImpl.class);
+	private Logger logger = LoggerFactory
+			.getLogger(AbstractRequestHandleImpl.class);
 
 	@Autowired
 	private MailMessageServiceIntf mailMessageService;
@@ -60,18 +60,17 @@ public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
 	protected abstract GeniResult<HandlerStatus> handleForward(String msgId);
 
 	@Override
-	@Transactional
 	public Result handleMailMessage(String msgId) {
 		GeniResult<String> result = new GeniResult<String>();
 		// 0 检查是否超时
 		MailEntity me = getMessageById(msgId);
 		Timestamp curt = new Timestamp(System.currentTimeMillis());
 		Date yesDate = DateUtil.addDay(curt, -1);
-		//一天前的数据
+		// 一天前的数据
 		if (yesDate.after(me.getEventTime())) {
 			logger.warn("邮件【{}】已经超时", msgId);
 			mailMessageService.updateMailSucd(msgId, "邮件已经超时，状态非新建");
-			throw new BizException("邮件【" + msgId + "】已经非新建状态");
+			throw new BizException("邮件【" + msgId + "】已经超时");
 		}
 
 		// 1. 如果未成功，先处理异常情况（消息状态为处理中，异常等）
@@ -79,7 +78,7 @@ public abstract class AbstractRequestHandleImpl implements RequestHandlerIntf {
 			// 需要进入异常流程
 			logger.warn("邮件【{}】已经非新建状态", msgId);
 			mailMessageService.updateMailSucd(msgId, "邮件已经处理，状态非新建");
-			throw new BizException("邮件【" + msgId + "】已经非新建状态");
+			// throw new BizException("邮件【" + msgId + "】已经非新建状态");
 		}
 
 		// 2. 检查该邮件是否所有手机都已经发送成功

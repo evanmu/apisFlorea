@@ -32,11 +32,11 @@ public class TestSqlserverJtds {
         Connection con = null;
         try {
             String driver = "net.sourceforge.jtds.jdbc.Driver";
-            String url = "jdbc:jtds:sqlserver://10.24.5.241:1433; DatabaseName=LXSERVER";
+            String url = "jdbc:jtds:sqlserver://10.32.96.177:1433; DatabaseName=apis";
             Class.forName(driver).newInstance();
             System.out.println(" 连接开始。。。。。。");
             long starttime = System.currentTimeMillis();
-            con = DriverManager.getConnection(url, "sa", "741852");
+            con = DriverManager.getConnection(url, "apis", "apis");
             long endtime = System.currentTimeMillis();
             System.out.println(" 连接成功 !Lost time:" + (endtime - starttime) / 1000 + "秒");
 
