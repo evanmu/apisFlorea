@@ -78,7 +78,7 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 		if (null == mm) {
 			return ret.fail("mail not exists!");
 		}
-		
+
 		if (status.equals(mm.getStatus())) {
 			return ret;
 		}
@@ -185,8 +185,10 @@ public class MailMessageServiceImpl implements MailMessageServiceIntf {
 	public void checkStatus(String msgId) {
 		// 1. 是否存在
 		MailEntity mm = getById(msgId);
-		if (!HandlerStatus.S.equals(mm.getStatus()) && !mm.getComments().contains("邮件已经超时")) {
-			//邮件未处理完成
+		if (!HandlerStatus.S.equals(mm.getStatus())
+				&& (StringUtils.isEmpty(mm.getComments()) || !mm.getComments()
+						.contains("邮件已经超时"))) {
+			// 邮件未处理完成
 			remoteMail.reserveMail(msgId);
 		}
 	}

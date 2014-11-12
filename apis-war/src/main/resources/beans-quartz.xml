@@ -32,7 +32,7 @@
 		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<!-- <ref bean="doTime" /> -->
+				<ref bean="doTime" />
 			</list>
 		</property>
 	</bean>

@@ -50,40 +50,44 @@ public class ReceiveMailTask implements InitializingBean {
 			curTask.restart();
 		}
 
-		RequestHandlerIntf handler = InterfaceServcie
-				.getHandler(InterfaceEm.sendSms);
+		try {
 
-		logger.debug("定时任务在运行...");
-		// 1. 初始化连接
-		Result init = handler.clientLogin();
-		if (!init.isSuccess()) {
-			logger.warn("initParams fail");
-			curTask.finish();
-			return;
-		}
+			RequestHandlerIntf handler = InterfaceServcie
+					.getHandler(InterfaceEm.sendSms);
 
-		// 1. 获取待发送列表
-		CollectionResult<List<String>> result = receiveMail.get2HanlerMail();
-		if (!result.isSuccess()) {
-			logger.error("获取待发送邮件列表失败, msg: {}", result);
-			curTask.finish();
-			return;
-		}
-
-		// 3. 处理邮件
-		for (String msgid : result.getDataSet()) {
-			Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms)
-					.handleMailMessage(msgid);
-			if (!gr.isSuccess()) {
-				// 失败则更新邮件状态为异常
-				mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
+			logger.debug("定时任务在运行...");
+			// 1. 初始化连接
+			Result init = handler.clientLogin();
+			if (!init.isSuccess()) {
+				logger.warn("initParams fail");
+				curTask.finish();
+				return;
 			}
-			mailMessageService.checkStatus(msgid);
-		}
-		// logger.info("短信发送完成，主动断开连接");
-		// anthenService.finallClose();
 
-		curTask.finish();
+			// 1. 获取待发送列表
+			CollectionResult<List<String>> result = receiveMail
+					.get2HanlerMail();
+			if (!result.isSuccess()) {
+				logger.error("获取待发送邮件列表失败, msg: {}", result);
+				curTask.finish();
+				return;
+			}
+
+			// 3. 处理邮件
+			for (String msgid : result.getDataSet()) {
+				Result gr = InterfaceServcie.getHandler(InterfaceEm.sendSms)
+						.handleMailMessage(msgid);
+				if (!gr.isSuccess()) {
+					// 失败则更新邮件状态为异常
+					mailMessageService.updateMailStatus(msgid, HandlerStatus.E);
+				}
+				mailMessageService.checkStatus(msgid);
+			}
+			// logger.info("短信发送完成，主动断开连接");
+			// anthenService.finallClose();
+		} finally {
+			curTask.finish();
+		}
 	}
 
 	@Override
