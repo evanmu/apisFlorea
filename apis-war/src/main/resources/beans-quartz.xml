@@ -15,7 +15,7 @@
 			<value>receive</value>
 		</property>
 	</bean>
-	
+
 	<!-- 定义触发时间 -->
 	<bean id="doTime" class="org.springframework.scheduling.quartz.CronTriggerBean">
 		<property name="jobDetail">
@@ -23,16 +23,16 @@
 		</property>
 		<!-- cron表达式 -->
 		<property name="cronExpression">
-			<value>0 */${task.interval} * * *  ?</value>
+			<value>0 */${task.interval} * * * ?</value>
 		</property>
 	</bean>
-	
+
 	<!-- 总管理类 如果将lazy-init='false'那么容器启动就会执行调度程序 -->
 	<bean id="startQuertz" lazy-init="false" autowire="no"
 		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<ref bean="doTime" />
+				<!-- <ref bean="doTime" /> -->
 			</list>
 		</property>
 	</bean>
