@@ -6,7 +6,7 @@ public class TaskStatus {
 	 */
 	private boolean isFinish;
 
-	public boolean isFinish() {
+	public synchronized boolean isFinish() {
 		return isFinish;
 	}
 
